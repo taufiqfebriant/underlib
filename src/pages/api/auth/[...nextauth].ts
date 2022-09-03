@@ -1,33 +1,68 @@
-import { UpstashRedisAdapter } from '@next-auth/upstash-redis-adapter';
-import { Redis } from '@upstash/redis';
-import NextAuth, { type NextAuthOptions } from 'next-auth';
+import axios from 'axios';
+import type { NextAuthOptions } from 'next-auth';
+import NextAuth from 'next-auth';
+import { JWT } from 'next-auth/jwt';
 import SpotifyProvider from 'next-auth/providers/spotify';
-
+import { AccessToken } from 'spotify-types';
 import { env } from '../../../env/server.mjs';
 
+const refreshAccessToken = async (token: JWT) => {
+	const basic = Buffer.from(
+		`${env.SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`,
+		'base64'
+	).toString();
+
+	const response = await axios.get<AccessToken>(
+		'https://accounts.spotify.com/api/token',
+		{
+			headers: {
+				Authorization: `Basic ${basic}`
+			},
+			params: {
+				grant_type: 'refresh_token',
+				refresh_token: token.refreshToken
+			}
+		}
+	);
+
+	return {
+		...token,
+		accessToken: response.data.access_token,
+		accessTokenExpires: Date.now() + response.data.expires_in * 1000
+	};
+};
+
 export const authOptions: NextAuthOptions = {
-	adapter: UpstashRedisAdapter(
-		new Redis({
-			url: env.UPSTASH_REDIS_URL,
-			token: env.UPSTASH_REDIS_TOKEN,
-		})
-	),
 	providers: [
-		// Kasik beberapa role
 		SpotifyProvider({
+			authorization:
+				'https://accounts.spotify.com/authorize?scope=user-read-email,playlist-read-collaborative',
 			clientId: env.SPOTIFY_CLIENT_ID,
-			clientSecret: env.SPOTIFY_CLIENT_SECRET,
-		}),
+			clientSecret: env.SPOTIFY_CLIENT_SECRET
+		})
 	],
 	callbacks: {
-		async session({ session, user }) {
-			if (session.user) {
-				session.user.id = user.id;
+		async jwt({ account, token, user }) {
+			if (account && account.expires_at && user) {
+				return {
+					...token,
+					accessToken: account.access_token,
+					accessTokenExpires: Date.now() + account.expires_at * 1000,
+					refreshToken: account.refresh_token
+				};
 			}
 
-			return session;
+			if (Date.now() < token.accessTokenExpires) {
+				return token;
+			}
+
+			return refreshAccessToken(token);
 		},
-	},
+		async session({ session, token }) {
+			session.accessToken = token.accessToken;
+			return session;
+		}
+	}
 };
 
 export default NextAuth(authOptions);

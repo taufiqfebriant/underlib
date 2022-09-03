@@ -11,7 +11,7 @@ export default function Document() {
 				crossOrigin="anonymous"
 			/>
 			<Head />
-			<body className="bg-black">
+			<body className="bg-black max-w-5xl mx-auto text-white">
 				<Main />
 				<NextScript />
 			</body>
