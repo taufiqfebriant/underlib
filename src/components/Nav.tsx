@@ -58,7 +58,7 @@ const Nav = () => {
 			</div>
 			<div className="flex items-center">
 				<NavLink href="/">Home</NavLink>
-				<NavLink href="/submit">Submit your playlists</NavLink>
+				<NavLink href="/submit">Submit your playlist</NavLink>
 				{session.data ? (
 					<SignButton
 						onClick={async () => await signOut()}

@@ -1,7 +1,12 @@
-import { Menu } from '@headlessui/react';
+import { Listbox } from '@headlessui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
+import clsx from 'clsx';
 import type { NextPage } from 'next';
+import Image from 'next/image';
+import { Fragment, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { FaChevronDown } from 'react-icons/fa';
+import { SimplifiedPlaylist } from 'spotify-types';
 import { z } from 'zod';
 import { trpc } from '../utils/trpc';
 
@@ -16,8 +21,9 @@ type Schema = z.infer<typeof schema>;
 
 const Submit: NextPage = () => {
 	const { data, isLoading, error } = trpc.useQuery(['playlists.getAll']);
-
 	const form = useForm<Schema>({ resolver: zodResolver(schema) });
+	const [selectedPlaylist, setSelectedPlaylist] =
+		useState<SimplifiedPlaylist | null>(null);
 
 	const onSubmit = () => {
 		console.log('submitted');
@@ -46,36 +52,54 @@ const Submit: NextPage = () => {
 						Playlist
 					</label>
 					<p className="text-gray-500 text-sm mt-1">Choose a playlist</p>
-					<Menu>
-						<Menu.Button>More</Menu.Button>
-						<Menu.Items>
-							<Menu.Item>
-								{({ active }) => (
-									<a
-										className={`${active && 'bg-blue-500'}`}
-										href="/account-settings"
-									>
-										Account settings
-									</a>
-								)}
-							</Menu.Item>
-							<Menu.Item>
-								{({ active }) => (
-									<a
-										className={`${active && 'bg-blue-500'}`}
-										href="/account-settings"
-									>
-										Documentation
-									</a>
-								)}
-							</Menu.Item>
-							<Menu.Item disabled>
-								<span className="opacity-75">
-									Invite a friend (coming soon!)
-								</span>
-							</Menu.Item>
-						</Menu.Items>
-					</Menu>
+					<Listbox value={selectedPlaylist} onChange={setSelectedPlaylist}>
+						<Listbox.Button className="w-full mt-2 bg-gray-900 px-4 h-10 rounded-md flex items-center justify-between">
+							<span>{selectedPlaylist?.name}</span>
+							<FaChevronDown />
+						</Listbox.Button>
+						<Listbox.Options className="mt-1 rounded-md overflow-hidden divide-y divide-gray-800">
+							{data?.items.length
+								? data.items.map(playlist => (
+										<Listbox.Option
+											key={playlist.id}
+											value={playlist}
+											as={Fragment}
+										>
+											{({ selected }) => (
+												<li
+													className={clsx(
+														'px-4 h-20 hover:bg-gray-800 cursor-pointer flex items-center gap-x-4',
+														{ 'bg-gray-800': selected },
+														{ 'bg-gray-900': !selected }
+													)}
+												>
+													{playlist.images.length && playlist.images[0]?.url ? (
+														<Image
+															src={playlist.images[0].url}
+															alt="Playlist image"
+															width={48}
+															height={48}
+															className="object-cover rounded-md"
+														/>
+													) : null}
+													<div>
+														<h1 className="block">{playlist.name}</h1>
+														{playlist.description ? (
+															<p
+																className="text-sm text-gray-500 truncate"
+																dangerouslySetInnerHTML={{
+																	__html: playlist.description
+																}}
+															/>
+														) : null}
+													</div>
+												</li>
+											)}
+										</Listbox.Option>
+								  ))
+								: null}
+						</Listbox.Options>
+					</Listbox>
 
 					{/* <Combobox value={selectedPerson} onChange={setSelectedPerson}>
 						<Combobox.Button as="div">
