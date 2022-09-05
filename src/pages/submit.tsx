@@ -20,7 +20,20 @@ const schema = z.object({
 type Schema = z.infer<typeof schema>;
 
 const Submit: NextPage = () => {
-	const { data, isLoading, error } = trpc.useQuery(['playlists.getAll']);
+	const { data, isLoading, error, hasNextPage } = trpc.useInfiniteQuery(
+		[
+			'playlists.getAll',
+			{
+				limit: 5
+			}
+		],
+		{
+			getNextPageParam: lastPage => {
+				const offset = new URL(lastPage.next).searchParams.get('offset');
+				return offset;
+			}
+		}
+	);
 	const form = useForm<Schema>({ resolver: zodResolver(schema) });
 	const [selectedPlaylist, setSelectedPlaylist] =
 		useState<SimplifiedPlaylist | null>(null);
@@ -57,9 +70,13 @@ const Submit: NextPage = () => {
 							<span>{selectedPlaylist?.name}</span>
 							<FaChevronDown />
 						</Listbox.Button>
-						<Listbox.Options className="mt-1 rounded-md overflow-hidden divide-y divide-gray-800">
-							{data?.items.length
-								? data.items.map(playlist => (
+						<Listbox.Options
+							className="mt-1 rounded-md divide-y divide-gray-800 overflow-y-auto h-60"
+							as="div"
+						>
+							{data?.pages.map((group, i) => (
+								<div key={i}>
+									{group.items.map(playlist => (
 										<Listbox.Option
 											key={playlist.id}
 											value={playlist}
@@ -68,7 +85,7 @@ const Submit: NextPage = () => {
 											{({ selected }) => (
 												<li
 													className={clsx(
-														'px-4 h-20 hover:bg-gray-800 cursor-pointer flex items-center gap-x-4',
+														`px-4 hover:bg-gray-800 cursor-pointer flex items-center gap-x-4 h-[80px]`,
 														{ 'bg-gray-800': selected },
 														{ 'bg-gray-900': !selected }
 													)}
@@ -96,30 +113,11 @@ const Submit: NextPage = () => {
 												</li>
 											)}
 										</Listbox.Option>
-								  ))
-								: null}
+									))}
+								</div>
+							))}
 						</Listbox.Options>
 					</Listbox>
-
-					{/* <Combobox value={selectedPerson} onChange={setSelectedPerson}>
-						<Combobox.Button as="div">
-							<Combobox.Input
-								onChange={event => setQuery(event.target.value)}
-								className="w-full mt-2 h-10 bg-gray-900 px-4 rounded-md"
-							/>
-						</Combobox.Button>
-						<Combobox.Options className="bg-gray-900 mt-3 rounded-md overflow-hidden">
-							{filteredPeople.map(person => (
-								<Combobox.Option
-									key={person}
-									value={person}
-									className="px-4 py-3 hover:bg-gray-800 hover:cursor-pointer"
-								>
-									{person}
-								</Combobox.Option>
-							))}
-						</Combobox.Options>
-					</Combobox> */}
 					{form.formState.errors.id?.message ? (
 						<p className="text-red-600 mt-2">
 							{form.formState.errors.id?.message}
