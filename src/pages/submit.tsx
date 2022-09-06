@@ -8,6 +8,7 @@ import { useForm } from 'react-hook-form';
 import { FaChevronDown } from 'react-icons/fa';
 import { SimplifiedPlaylist } from 'spotify-types';
 import { z } from 'zod';
+import Spinner from '../components/Spinner';
 import { trpc } from '../utils/trpc';
 
 const schema = z.object({
@@ -20,20 +21,28 @@ const schema = z.object({
 type Schema = z.infer<typeof schema>;
 
 const Submit: NextPage = () => {
-	const { data, isLoading, error, hasNextPage } = trpc.useInfiniteQuery(
-		[
-			'playlists.getAll',
-			{
-				limit: 5
+	const limit = 5;
+	const {
+		data,
+		isLoading,
+		error,
+		hasNextPage,
+		fetchNextPage,
+		isFetchingNextPage
+	} = trpc.useInfiniteQuery(['playlists.getAll', { limit }], {
+		getNextPageParam: lastPage => {
+			if (!lastPage.next) {
+				return null;
 			}
-		],
-		{
-			getNextPageParam: lastPage => {
-				const offset = new URL(lastPage.next).searchParams.get('offset');
-				return offset;
+
+			const offset = new URL(lastPage.next).searchParams.get('offset');
+			if (!offset) {
+				return null;
 			}
+
+			return parseInt(offset);
 		}
-	);
+	});
 	const form = useForm<Schema>({ resolver: zodResolver(schema) });
 	const [selectedPlaylist, setSelectedPlaylist] =
 		useState<SimplifiedPlaylist | null>(null);
@@ -70,12 +79,9 @@ const Submit: NextPage = () => {
 							<span>{selectedPlaylist?.name}</span>
 							<FaChevronDown />
 						</Listbox.Button>
-						<Listbox.Options
-							className="mt-1 rounded-md divide-y divide-gray-800 overflow-y-auto h-60"
-							as="div"
-						>
+						<Listbox.Options className="mt-1 rounded-md divide-y divide-gray-800 overflow-y-auto h-60">
 							{data?.pages.map((group, i) => (
-								<div key={i}>
+								<Fragment key={i}>
 									{group.items.map(playlist => (
 										<Listbox.Option
 											key={playlist.id}
@@ -85,7 +91,7 @@ const Submit: NextPage = () => {
 											{({ selected }) => (
 												<li
 													className={clsx(
-														`px-4 hover:bg-gray-800 cursor-pointer flex items-center gap-x-4 h-[80px]`,
+														`px-4 hover:bg-gray-800 cursor-pointer flex items-center gap-x-4 h-20`,
 														{ 'bg-gray-800': selected },
 														{ 'bg-gray-900': !selected }
 													)}
@@ -114,8 +120,23 @@ const Submit: NextPage = () => {
 											)}
 										</Listbox.Option>
 									))}
-								</div>
+								</Fragment>
 							))}
+							{hasNextPage ? (
+								<li className="bg-gray-900 flex items-center h-20 justify-center">
+									{isFetchingNextPage ? <Spinner /> : null}
+
+									{hasNextPage && !isFetchingNextPage ? (
+										<button
+											type="button"
+											className="bg-gray-800 px-4 py-2 rounded-md hover:bg-gray-700"
+											onClick={() => fetchNextPage()}
+										>
+											Load more
+										</button>
+									) : null}
+								</li>
+							) : null}
 						</Listbox.Options>
 					</Listbox>
 					{form.formState.errors.id?.message ? (
