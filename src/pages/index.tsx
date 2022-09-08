@@ -19,7 +19,8 @@ const Home: NextPage = () => {
 				"you're growing up."
 			],
 			typeSpeed: 70,
-			backSpeed: 60,
+			backSpeed: 50,
+			backDelay: 2500,
 			loop: true
 		});
 

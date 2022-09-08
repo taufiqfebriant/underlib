@@ -60,7 +60,14 @@ export const authOptions: NextAuthOptions = {
 			return refreshAccessToken(token);
 		},
 		async session({ session, token }) {
-			session.accessToken = token.accessToken;
+			if (token.sub) {
+				session.user.id = token.sub;
+			}
+
+			if (token.accessToken) {
+				session.accessToken = token.accessToken;
+			}
+
 			return session;
 		}
 	}
