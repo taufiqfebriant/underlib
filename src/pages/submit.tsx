@@ -103,7 +103,7 @@ const Submit: NextPage = () => {
 					</h1>
 					<p className="mt-4 text-gray-400 font-medium text-center">
 						Choose one of your public playlists and give it some tags to help
-						folks finding it
+						folks find it
 					</p>
 					<form onSubmit={form.handleSubmit(onSubmit)} className="mt-10">
 						<div>
@@ -194,7 +194,7 @@ const Submit: NextPage = () => {
 								Tags
 							</label>
 							<p className="text-gray-500 text-sm mt-1">
-								Add some tags that relates to your playlist
+								Add some tags that relate to your playlist
 							</p>
 							{selectedTags.length ? (
 								<div className="flex gap-2 mt-3 flex-wrap">
@@ -236,6 +236,7 @@ const Submit: NextPage = () => {
 									onChange={e => setQuery(e.target.value)}
 									className="w-full bg-gray-900 px-4 h-10 rounded-md flex items-center justify-between focus:outline-none mt-2"
 									ref={tagsInputRef}
+									placeholder="Chill, Happy, Young, etc."
 								/>
 								<Combobox.Options className="mt-1 rounded-md divide-y divide-gray-800 overflow-y-auto max-h-60">
 									{isNew ? (
