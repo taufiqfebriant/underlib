@@ -5,7 +5,7 @@ import type { NextPage } from 'next';
 import Image from 'next/image';
 import { Fragment, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaExternalLinkAlt } from 'react-icons/fa';
 import { MdClose } from 'react-icons/md';
 import { z } from 'zod';
 import Spinner from '../components/Spinner';
@@ -118,7 +118,7 @@ const Submit: NextPage = () => {
 											<span>{selectedPlaylist?.name}</span>
 											{open ? <FaChevronUp /> : <FaChevronDown />}
 										</Listbox.Button>
-										<Listbox.Options className="mt-1 rounded-md divide-y divide-gray-800 overflow-y-auto h-60">
+										<Listbox.Options className="mt-1 rounded-md divide-y divide-gray-800 overflow-y-auto max-h-60">
 											{data?.pages.map((group, i) => (
 												<Fragment key={i}>
 													{group.data.map(playlist => (
@@ -278,7 +278,37 @@ const Submit: NextPage = () => {
 						</div>
 					</form>
 				</>
-			) : null}
+			) : (
+				<>
+					<h1 className="text-white text-4xl font-bold mt-14 text-center">
+						Oh crap!
+					</h1>
+					<p className="mt-4 text-gray-400 font-medium text-center">
+						You don&apos;t have a playlist to submit yet
+					</p>
+					<div className="mt-10">
+						<p>What should i do?</p>
+						<ul className="list-disc list-inside">
+							<li>
+								Make sure your playlist is set to public and added to your
+								profile. Tutorial:{' '}
+								<a
+									href="https://allthings.how/how-to-add-playlists-to-your-spotify-profile"
+									rel="noreferrer"
+									target="_blank"
+									className="text-cyan-600 hover:underline flex items-center gap-x-2"
+								>
+									<span>
+										How to Add Playlists to Your Spotify Profile - All Things
+										How
+									</span>
+									<FaExternalLinkAlt />
+								</a>
+							</li>
+						</ul>
+					</div>
+				</>
+			)}
 		</main>
 	);
 };

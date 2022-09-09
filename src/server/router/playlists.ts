@@ -81,12 +81,8 @@ export const playlistsRouter = createRouter().query('getAll', {
 			const items = get_owned_playlists_response.data.items;
 			const next = get_owned_playlists_response.data.next;
 
-			if (!items.length && !next) {
-				break;
-			}
-
 			data.push(
-				...get_owned_playlists_response.data.items
+				...items
 					.slice(undefined, input.limit - data.length)
 					.map(({ id, name, description, images }) => ({
 						id,
@@ -96,9 +92,11 @@ export const playlistsRouter = createRouter().query('getAll', {
 					}))
 			);
 
-			if (next) {
-				cursor = new URL(next).searchParams.get('offset');
+			if (!next) {
+				break;
 			}
+
+			cursor = new URL(next).searchParams.get('offset');
 		}
 
 		return {
