@@ -1,9 +1,10 @@
+import { Popover } from '@headlessui/react';
 import clsx from 'clsx';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import type { DOMAttributes, ReactElement } from 'react';
-import { FaSignOutAlt, FaSpotify } from 'react-icons/fa';
+import { FaSpotify } from 'react-icons/fa';
 import { IconType } from 'react-icons/lib';
 
 type NavItemProps = {
@@ -60,13 +61,34 @@ const Nav = () => {
 				<NavLink href="/">Home</NavLink>
 				<NavLink href="/submit">Submit your playlist</NavLink>
 				{session.data ? (
-					<SignButton
-						onClick={async () => await signOut()}
-						icon={<FaSignOutAlt className="text-lg" />}
-					>
-						Sign out
-					</SignButton>
+					<Popover className="relative">
+						<Popover.Button>{session.data.user.name}</Popover.Button>
+
+						<Popover.Panel className="absolute z-10">
+							<div className="flex flex-col">
+								<Popover.Button
+									className="bg-gray-900 px-2 py-2"
+									as={Link}
+									href="/me/playlists"
+								>
+									My Playlists
+								</Popover.Button>
+								<Popover.Button
+									className="bg-gray-900 px-2 py-2"
+									onClick={async () => signOut()}
+								>
+									Sign out
+								</Popover.Button>
+							</div>
+						</Popover.Panel>
+					</Popover>
 				) : (
+					// <SignButton
+					// 	onClick={async () => await signOut()}
+					// 	icon={<FaSignOutAlt className="text-lg" />}
+					// >
+					// 	Sign out
+					// </SignButton>
 					<SignButton
 						onClick={async () => await signIn('spotify')}
 						icon={<FaSpotify className="text-lg" />}

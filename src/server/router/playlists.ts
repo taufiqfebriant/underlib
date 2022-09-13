@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import axios, { AxiosResponse } from 'axios';
 import { customAlphabet } from 'nanoid';
@@ -58,7 +59,8 @@ export type ResponseData = Pick<
 const customNanoId = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 20);
 
 export const playlistsRouter = createRouter()
-	.query('all', {
+	.query('all-from-spotify', {
+		// TODO: pindah ke me.tsx
 		input: query_all_input,
 		async resolve({ ctx, input }) {
 			if (!ctx.session) {
@@ -108,6 +110,71 @@ export const playlistsRouter = createRouter()
 				data,
 				cursor: cursor ? parseInt(cursor) : null
 			};
+		}
+	})
+	.query('all', {
+		input: z.object({
+			limit: z.number().min(1).max(5),
+			cursor: z.number().nullish()
+		}),
+		async resolve({ ctx, input }) {
+			const playlists_select = Prisma.validator<Prisma.PlaylistSelect>()({
+				id: true,
+				tags: {
+					select: {
+						name: true
+					}
+				}
+			});
+
+			const playlists = await ctx.prisma.playlist.findMany({
+				take: input.limit,
+				select: playlists_select
+			});
+
+			const spotify_playlist_promises = playlists.map(async playlist => {
+				const spotify_response: AxiosResponse<
+					Pick<
+						SimplifiedPlaylist,
+						'id' | 'name' | 'description' | 'images' | 'owner'
+					>
+				> = await axios.get(
+					`https://api.spotify.com/v1/playlists/${playlist.id}`,
+					{
+						headers: {
+							Accept: 'application/json',
+							'Content-Type': 'application/json',
+							Authorization: `Bearer ${ctx.session?.accessToken}`
+						},
+						params: {
+							fields: 'id,name,description,images,owner'
+						}
+					}
+				);
+
+				return spotify_response.data;
+			});
+
+			const data: (Pick<
+				SimplifiedPlaylist,
+				'id' | 'name' | 'description' | 'images' | 'owner'
+			> &
+				Pick<
+					Prisma.PlaylistGetPayload<{ select: typeof playlists_select }>,
+					'tags'
+				>)[] = [];
+			for await (const spotify_playlist of spotify_playlist_promises) {
+				const related_playlist = playlists.find(
+					playlist => playlist.id === spotify_playlist.id
+				);
+
+				data.push({
+					...spotify_playlist,
+					tags: related_playlist ? related_playlist.tags : []
+				});
+			}
+
+			return { data };
 		}
 	})
 	.mutation('create', {

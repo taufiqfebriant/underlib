@@ -38,9 +38,12 @@ const tags = [
 
 const Submit: NextPage = () => {
 	const limit = 5;
-	const get_playlists = trpc.useInfiniteQuery(['playlists.all', { limit }], {
-		getNextPageParam: lastPage => lastPage.cursor
-	});
+	const get_playlists = trpc.useInfiniteQuery(
+		['playlists.all-from-spotify', { limit }],
+		{
+			getNextPageParam: lastPage => lastPage.cursor
+		}
+	);
 
 	const create_playlist = trpc.useMutation('playlists.create');
 
