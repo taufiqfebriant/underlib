@@ -3,20 +3,23 @@ import { createRouter } from './context';
 
 export const tagsRouter = createRouter().query('all', {
 	input: z.object({
-		q: z.string().nullish()
+		q: z.string().nullish(),
+		except: z
+			.array(z.string())
+			.refine(array => new Set([...array]).size === array.length)
+			.nullish()
 	}),
 	async resolve({ ctx, input }) {
 		const tags = await ctx.prisma.tag.findMany({
 			select: {
 				name: true
 			},
-			where: input.q
-				? {
-						name: {
-							contains: input.q
-						}
-				  }
-				: undefined,
+			where: {
+				name: {
+					contains: input.q ?? undefined,
+					notIn: input.except?.length ? input.except : undefined
+				}
+			},
 			orderBy: {
 				name: 'asc'
 			},
