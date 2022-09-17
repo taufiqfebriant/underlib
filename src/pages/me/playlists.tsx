@@ -61,6 +61,7 @@ const MyPlaylists: NextPage = () => {
 	const [query, setQuery] = useState('');
 	const form = useForm<Schema>({ resolver: zodResolver(schema) });
 	const updateTags = trpc.useMutation('playlists.update');
+	const deletePlaylist = trpc.useMutation('playlists.delete');
 
 	let dialogTitle = '';
 	switch (action) {
@@ -83,6 +84,22 @@ const MyPlaylists: NextPage = () => {
 			selectedPlaylistPageIndex = index;
 		}
 	});
+
+	const confirmDeletePlaylist = async () => {
+		try {
+			if (selectedPlaylist) {
+				await deletePlaylist.mutateAsync({ id: selectedPlaylist.id });
+			}
+
+			if (selectedPlaylistPageIndex !== null) {
+				await getPlaylists.refetch({
+					refetchPage: (_, index) => index === selectedPlaylistPageIndex
+				});
+			}
+
+			setOpen(false);
+		} catch {}
+	};
 
 	if (getPlaylists.isLoading) {
 		return <p>Loading...</p>;
@@ -286,7 +303,7 @@ const MyPlaylists: NextPage = () => {
 						) : null}
 
 						{action === Action.DeletePlaylist ? (
-							<form onSubmit={form.handleSubmit(onSubmit)}>
+							<>
 								<p className="mt-4">
 									Are you sure want to delete &quot;
 									<span className="font-semibold">
@@ -294,15 +311,22 @@ const MyPlaylists: NextPage = () => {
 									</span>
 									&quot; playlist?
 								</p>
-								<div className="flex">
-									<button type="submit" className="bg-red-500">
+								<div className="flex gap-x-4 mt-4">
+									<button
+										type="submit"
+										className="bg-red-500 w-1/2 rounded-md py-2"
+										onClick={confirmDeletePlaylist}
+									>
 										Yes
 									</button>
-									<button type="button" className="bg-gray-800">
+									<button
+										type="button"
+										className="bg-gray-800 w-1/2 rounded-md py-2"
+									>
 										No
 									</button>
 								</div>
-							</form>
+							</>
 						) : null}
 					</Dialog.Panel>
 				</div>

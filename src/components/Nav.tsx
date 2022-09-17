@@ -3,13 +3,37 @@ import clsx from 'clsx';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import type { DOMAttributes, ReactElement } from 'react';
+import { DOMAttributes, ReactElement, useEffect, useState } from 'react';
 import { FaSpotify } from 'react-icons/fa';
 import { IconType } from 'react-icons/lib';
+import {
+	MdArrowDropDown,
+	MdArrowDropUp,
+	MdLogout,
+	MdQueueMusic
+} from 'react-icons/md';
 
 type NavItemProps = {
 	href: string;
 	children: string;
+};
+
+const useScrollPosition = () => {
+	const [scrollPosition, setScrollPosition] = useState(0);
+
+	useEffect(() => {
+		const updatePosition = () => {
+			setScrollPosition(window.scrollY);
+		};
+
+		window.addEventListener('scroll', updatePosition);
+
+		updatePosition();
+
+		return () => window.removeEventListener('scroll', updatePosition);
+	}, []);
+
+	return scrollPosition;
 };
 
 const NavLink = ({ href, children }: NavItemProps) => {
@@ -20,8 +44,8 @@ const NavLink = ({ href, children }: NavItemProps) => {
 		<Link href={href} passHref>
 			<a
 				className={clsx(
-					'font-medium hover:bg-gray-900 px-4 py-2 rounded-md transition-all',
-					{ 'text-gray-500': !isActive },
+					'font-medium mx-4 rounded-md transition-all text-sm hover:text-white',
+					{ 'text-[#989898]': !isActive },
 					{ 'text-white': isActive }
 				)}
 			>
@@ -51,51 +75,74 @@ const SignButton = ({ onClick, icon, children }: SignButtonProps) => {
 
 const Nav = () => {
 	const session = useSession();
+	const scrollPosition = useScrollPosition();
 
 	return (
-		<nav className="flex py-4 items-center justify-between">
-			<div className="bg-white text-black font-bold px-4 py-2 text-xl">
-				diskaver
-			</div>
-			<div className="flex items-center">
-				<NavLink href="/">Home</NavLink>
-				<NavLink href="/submit">Submit your playlist</NavLink>
-				{session.data ? (
-					<Popover className="relative">
-						<Popover.Button>{session.data.user.name}</Popover.Button>
+		<nav
+			className={clsx(
+				'py-4 justify-between sticky top-0 bg-[#151515] transition-shadow z-10',
+				{ 'shadow-sm': scrollPosition },
+				{ 'shadow-[#3c3c3c]': scrollPosition },
+				{ 'shadow-none': !scrollPosition }
+			)}
+		>
+			<div className="flex items-center justify-between relative max-w-6xl mx-auto">
+				<div className="bg-white text-[#151515] font-bold px-4 py-2">
+					diskaver
+				</div>
+				<div className="flex items-center">
+					<NavLink href="/">Home</NavLink>
+					<NavLink href="/submit">Submit your playlist</NavLink>
+					{session.data ? (
+						<Popover>
+							{({ open }) => (
+								<>
+									<Popover.Button
+										className={clsx(
+											'font-medium ml-2 px-4 py-2 rounded-md transition-all flex items-center gap-x-2 text-sm hover:bg-[#3c3c3c]',
+											{ 'bg-[#292929]': !open },
+											{ 'bg-[#3c3c3c]': open }
+										)}
+									>
+										<span>{session.data.user.name}</span>
+										{open ? (
+											<MdArrowDropUp className="text-xl" />
+										) : (
+											<MdArrowDropDown className="text-xl" />
+										)}
+									</Popover.Button>
 
-						<Popover.Panel className="absolute z-10">
-							<div className="flex flex-col">
-								<Popover.Button
-									className="bg-gray-900 px-2 py-2"
-									as={Link}
-									href="/me/playlists"
-								>
-									My Playlists
-								</Popover.Button>
-								<Popover.Button
-									className="bg-gray-900 px-2 py-2"
-									onClick={async () => signOut()}
-								>
-									Sign out
-								</Popover.Button>
-							</div>
-						</Popover.Panel>
-					</Popover>
-				) : (
-					// <SignButton
-					// 	onClick={async () => await signOut()}
-					// 	icon={<FaSignOutAlt className="text-lg" />}
-					// >
-					// 	Sign out
-					// </SignButton>
-					<SignButton
-						onClick={async () => await signIn('spotify')}
-						icon={<FaSpotify className="text-lg" />}
-					>
-						Sign in with Spotify
-					</SignButton>
-				)}
+									<Popover.Panel className="absolute mt-2 rounded-md overflow-hidden w-48 bg-[#292929]">
+										<div className="flex flex-col divide-y divide-[#3c3c3c]">
+											<Popover.Button as={Link} href="/me/playlists" passHref>
+												<a className="flex items-center py-3 px-4 gap-x-2 transition-all hover:bg-[#3c3c3c]">
+													<MdQueueMusic />
+													<span className="text-sm font-medium">
+														My Playlists
+													</span>
+												</a>
+											</Popover.Button>
+											<Popover.Button
+												onClick={async () => signOut()}
+												className="flex items-center py-3 px-4 gap-x-2 transition-all hover:bg-[#3c3c3c]"
+											>
+												<MdLogout />
+												<span className="text-sm font-medium">Sign out</span>
+											</Popover.Button>
+										</div>
+									</Popover.Panel>
+								</>
+							)}
+						</Popover>
+					) : (
+						<SignButton
+							onClick={async () => await signIn('spotify')}
+							icon={<FaSpotify className="text-lg" />}
+						>
+							Sign in with Spotify
+						</SignButton>
+					)}
+				</div>
 			</div>
 		</nav>
 	);

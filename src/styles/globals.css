@@ -9,7 +9,3 @@
 	font-display: optional;
 	src: url('/fonts/Inter-VariableFont_slnt,wght.woff2') format('woff2');
 }
-
-.typed-cursor {
-	color: theme('colors.green.500');
-}

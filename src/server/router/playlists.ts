@@ -118,7 +118,7 @@ export const playlistsRouter = createRouter()
 			cursor: z.number().nullish()
 		}),
 		async resolve({ ctx, input }) {
-			const playlists_select = Prisma.validator<Prisma.PlaylistSelect>()({
+			const playlistsSelect = Prisma.validator<Prisma.PlaylistSelect>()({
 				id: true,
 				tags: {
 					select: {
@@ -129,11 +129,14 @@ export const playlistsRouter = createRouter()
 
 			const playlists = await ctx.prisma.playlist.findMany({
 				take: input.limit,
-				select: playlists_select
+				select: playlistsSelect,
+				where: {
+					deletedAt: null
+				}
 			});
 
-			const spotify_playlist_promises = playlists.map(async playlist => {
-				const spotify_response: AxiosResponse<
+			const spotifyPlaylistPromises = playlists.map(async playlist => {
+				const spotifyResponse: AxiosResponse<
 					Pick<
 						SimplifiedPlaylist,
 						'id' | 'name' | 'description' | 'images' | 'owner'
@@ -152,7 +155,7 @@ export const playlistsRouter = createRouter()
 					}
 				);
 
-				return spotify_response.data;
+				return spotifyResponse.data;
 			});
 
 			const data: (Pick<
@@ -160,17 +163,17 @@ export const playlistsRouter = createRouter()
 				'id' | 'name' | 'description' | 'images' | 'owner'
 			> &
 				Pick<
-					Prisma.PlaylistGetPayload<{ select: typeof playlists_select }>,
+					Prisma.PlaylistGetPayload<{ select: typeof playlistsSelect }>,
 					'tags'
 				>)[] = [];
-			for await (const spotify_playlist of spotify_playlist_promises) {
-				const related_playlist = playlists.find(
-					playlist => playlist.id === spotify_playlist.id
+			for await (const spotifyPlaylist of spotifyPlaylistPromises) {
+				const relatedPlaylist = playlists.find(
+					playlist => playlist.id === spotifyPlaylist.id
 				);
 
 				data.push({
-					...spotify_playlist,
-					tags: related_playlist ? related_playlist.tags : []
+					...spotifyPlaylist,
+					tags: relatedPlaylist ? relatedPlaylist.tags : []
 				});
 			}
 
@@ -284,6 +287,25 @@ export const playlistsRouter = createRouter()
 				});
 			} catch (error) {
 				console.error(`Failed to update playlist, error:`, error);
+			}
+		}
+	})
+	.mutation('delete', {
+		input: z.object({
+			id: z.string().min(1, { message: 'You must select one of your playlist' })
+		}),
+		async resolve({ ctx, input }) {
+			try {
+				await ctx.prisma.playlist.update({
+					where: {
+						id: input.id
+					},
+					data: {
+						deletedAt: new Date().toISOString()
+					}
+				});
+			} catch (e) {
+				console.log('Failed to delete playlist. Exception:', e);
 			}
 		}
 	});
