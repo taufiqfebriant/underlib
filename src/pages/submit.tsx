@@ -33,7 +33,9 @@ const tags = [
 	{ id: '9', name: 'Hard Work' },
 	{ id: '10', name: 'Comeback' },
 	{ id: '11', name: 'Young' },
-	{ id: '12', name: 'Free' }
+	{ id: '12', name: 'Free' },
+	{ id: '13', name: 'Crush' },
+	{ id: '14', name: 'Break' }
 ];
 
 const Submit: NextPage = () => {
