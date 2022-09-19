@@ -1,21 +1,20 @@
 import { Combobox } from '@headlessui/react';
+import clsx from 'clsx';
 import { NextPage } from 'next';
 import Image from 'next/image';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { MdClose, MdOutlineArrowDownward } from 'react-icons/md';
 import Typed from 'typed.js';
+import { useDebounce } from '../hooks/use-debounce';
 import { trpc } from '../utils/trpc';
 
 const TagOptions = ({ query, except }: { query: string; except: string[] }) => {
 	const getTags = trpc.useQuery(['tags.all', { q: query, except }]);
-
-	// TODO: pakek komponen "Spinner"
-	if (getTags.isLoading) {
-		return <p>Loading...</p>;
-	}
+	const defaultClasses =
+		'px-4 cursor-pointer h-10 bg-[#292929] flex items-center';
 
 	if (getTags.error) {
-		return <p>Something went wrong</p>;
+		return <div className={defaultClasses}>Something went wrong</div>;
 	}
 
 	return (
@@ -24,7 +23,7 @@ const TagOptions = ({ query, except }: { query: string; except: string[] }) => {
 				<Combobox.Option
 					key={tag}
 					value={tag}
-					className="px-4 hover:bg-[#3c3c3c] cursor-pointer flex items-center gap-x-4 h-10 transition-colors bg-[#292929]"
+					className={`${defaultClasses} hover:bg-[#3c3c3c] transition-colors`}
 				>
 					{tag}
 				</Combobox.Option>
@@ -33,8 +32,15 @@ const TagOptions = ({ query, except }: { query: string; except: string[] }) => {
 	);
 };
 
-const Playlists = () => {
-	const get_playlists = trpc.useInfiniteQuery(['playlists.all', { limit: 5 }]);
+type PlaylistsProps = {
+	tags: string[];
+};
+
+const Playlists = (props: PlaylistsProps) => {
+	const get_playlists = trpc.useInfiniteQuery([
+		'playlists.all',
+		{ limit: 8, tags: props.tags }
+	]);
 
 	if (get_playlists.isLoading) {
 		return <p>Loading...</p>;
@@ -45,7 +51,7 @@ const Playlists = () => {
 	}
 
 	return (
-		<div className="flex pl-6 flex-wrap gap-y-6 justify-between">
+		<div className="grid grid-cols-[repeat(4,_minmax(0,_220px))] w-full justify-between gap-y-6">
 			{get_playlists.data?.pages.map((group, i) => (
 				<Fragment key={i}>
 					{group.data.map(playlist => (
@@ -91,6 +97,7 @@ const Home: NextPage = () => {
 	const playlistsSectionRef = useRef<HTMLDivElement>(null);
 	const [query, setQuery] = useState('');
 	const [selectedTags, setSelectedTags] = useState<string[]>([]);
+	const debouncedQuery: string = useDebounce<string>(query, 1000);
 
 	useEffect(() => {
 		if (!typeElementRef.current) return;
@@ -142,7 +149,7 @@ const Home: NextPage = () => {
 							}}
 						>
 							<span className="font-semibold">Discover now</span>
-							<MdOutlineArrowDownward className="text-lg pointer-events-none" />
+							<MdOutlineArrowDownward className="text-lg" />
 						</button>
 					</div>
 				</div>
@@ -152,30 +159,38 @@ const Home: NextPage = () => {
 				ref={playlistsSectionRef}
 			>
 				<h1 className="font-bold text-3xl">All playlists</h1>
-				<div className="flex gap-x-1 mt-6">
-					<div className="sticky top-20">
+				<div className="flex gap-x-6 mt-6">
+					<div className="sticky top-20 block w-64">
 						{selectedTags.length ? (
-							<div className="flex gap-2 mt-3 flex-wrap">
+							<div className="flex gap-2 flex-wrap">
 								{selectedTags.map(tag => (
 									<div
 										key={tag}
-										className="bg-gray-800 pl-4 pr-1 py-1 rounded-full flex items-center gap-x-2"
+										className="bg-[#292929] pl-3 pr-1 py-1 rounded-md flex items-center gap-x-2"
 									>
 										<span className="text-sm">{tag}</span>
 										<button
 											type="button"
-											className="bg-gray-700 hover:bg-gray-700 transition-all rounded-full p-1"
+											className="bg-[#3c3c3c] hover:bg-[#686868] transition-colors rounded-md p-1"
 											onClick={() =>
 												setSelectedTags(prev => prev.filter(t => t !== tag))
 											}
 										>
-											<MdClose />
+											<MdClose className="text-sm" />
 										</button>
 									</div>
 								))}
 							</div>
 						) : null}
-						<label>Tags</label>
+						<label
+							className={clsx(
+								'inline-block',
+								{ 'mt-4': selectedTags.length },
+								{ 'mt-0': !selectedTags.length }
+							)}
+						>
+							Tags
+						</label>
 						<Combobox
 							value={selectedTags}
 							onChange={tags => setSelectedTags(tags)}
@@ -185,15 +200,17 @@ const Home: NextPage = () => {
 						>
 							<Combobox.Input
 								onChange={e => setQuery(e.target.value)}
-								className="bg-[#292929] h-10 rounded-md px-4 w-52"
+								className="bg-[#292929] h-10 rounded-md px-4 w-full"
 								placeholder="Search tags"
 							/>
 							<Combobox.Options className="mt-2 rounded-md divide-y divide-gray-800 overflow-y-auto max-h-60">
-								<TagOptions query={query} except={selectedTags} />
+								{debouncedQuery ? (
+									<TagOptions query={debouncedQuery} except={selectedTags} />
+								) : null}
 							</Combobox.Options>
 						</Combobox>
 					</div>
-					<Playlists />
+					<Playlists tags={selectedTags} />
 				</div>
 			</div>
 		</main>

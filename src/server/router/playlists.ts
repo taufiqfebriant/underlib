@@ -114,8 +114,9 @@ export const playlistsRouter = createRouter()
 	})
 	.query('all', {
 		input: z.object({
-			limit: z.number().min(1).max(5),
-			cursor: z.number().nullish()
+			limit: z.number().min(1).max(8),
+			cursor: z.number().nullish(),
+			tags: z.array(z.string()).nullish()
 		}),
 		async resolve({ ctx, input }) {
 			const playlistsSelect = Prisma.validator<Prisma.PlaylistSelect>()({
@@ -131,7 +132,14 @@ export const playlistsRouter = createRouter()
 				take: input.limit,
 				select: playlistsSelect,
 				where: {
-					deletedAt: null
+					deletedAt: null,
+					tags: {
+						some: {
+							name: {
+								in: input.tags?.length ? input.tags : undefined
+							}
+						}
+					}
 				}
 			});
 
