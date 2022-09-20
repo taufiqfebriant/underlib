@@ -52,7 +52,10 @@ enum Action {
 }
 
 const MyPlaylists: NextPage = () => {
-	const getPlaylists = trpc.useInfiniteQuery(['me.playlists', { limit: 8 }]);
+	const getPlaylists = trpc.useInfiniteQuery([
+		'me.submittedPlaylists',
+		{ limit: 8 }
+	]);
 	const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(
 		null
 	);

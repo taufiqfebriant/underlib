@@ -141,14 +141,14 @@ const Home: NextPage = () => {
 					<div className="flex justify-center mt-10">
 						<button
 							type="button"
-							className="bg-white px-6 py-2 text-[#151515] rounded-md hover:bg-gray-200 transition-colors flex items-center gap-x-2"
+							className="bg-white px-6 py-2 text-[#151515] rounded-md hover:bg-gray-200 transition-colors flex items-center gap-x-2 font-bold"
 							onClick={() => {
 								playlistsSectionRef.current?.scrollIntoView({
 									behavior: 'smooth'
 								});
 							}}
 						>
-							<span className="font-semibold">Discover now</span>
+							<span>Discover now</span>
 							<MdOutlineArrowDownward className="text-lg" />
 						</button>
 					</div>

@@ -12,7 +12,7 @@ type SpotifyPlaylist = Pick<
 
 export type Playlist = SpotifyPlaylist & { tags: Tag['name'][] };
 
-export const meRouter = createRouter().query('playlists', {
+export const meSubmittedPlaylists = createRouter().query('submittedPlaylists', {
 	input: z.object({
 		limit: z.number().min(1).max(8),
 		cursor: z.number().nullish()

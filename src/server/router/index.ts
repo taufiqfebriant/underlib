@@ -3,7 +3,8 @@ import superjson from 'superjson';
 import { createRouter } from './context';
 
 import { exampleRouter } from './example';
-import { meRouter } from './me';
+import { mePlaylists } from './me.playlists';
+import { meSubmittedPlaylists } from './me.submittedPlaylists';
 import { playlistsRouter } from './playlists';
 import { protectedExampleRouter } from './protected-example-router';
 import { tagsRouter } from './tags';
@@ -13,8 +14,9 @@ export const appRouter = createRouter()
 	.merge('example.', exampleRouter)
 	.merge('auth.', protectedExampleRouter)
 	.merge('playlists.', playlistsRouter)
-	.merge('me.', meRouter)
-	.merge('tags.', tagsRouter);
+	.merge('tags.', tagsRouter)
+	.merge(mePlaylists)
+	.merge(meSubmittedPlaylists);
 
 // export type definition of API
 export type AppRouter = typeof appRouter;
