@@ -5,7 +5,7 @@ import { customAlphabet } from 'nanoid';
 import { Session } from 'next-auth';
 import { Paging, SimplifiedPlaylist } from 'spotify-types';
 import { z } from 'zod';
-import { mutation_create_input } from '../../pages/submit';
+import { createPlaylistInput } from '../../pages/submit';
 import { createRouter } from './context';
 
 const query_all_input = z.object({
@@ -189,7 +189,7 @@ export const playlistsRouter = createRouter()
 		}
 	})
 	.mutation('create', {
-		input: mutation_create_input,
+		input: createPlaylistInput,
 		async resolve({ ctx, input }) {
 			if (!ctx.session) {
 				throw new TRPCError({ code: 'UNAUTHORIZED' });

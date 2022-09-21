@@ -3,24 +3,15 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import clsx from 'clsx';
 import type { NextPage } from 'next';
 import Image from 'next/image';
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { FaChevronDown, FaChevronUp, FaExternalLinkAlt } from 'react-icons/fa';
 import { MdClose } from 'react-icons/md';
 import { z } from 'zod';
 import Spinner from '../components/Spinner';
 import { useDebounce } from '../hooks/use-debounce';
-import { ResponseData } from '../server/router/playlists';
+import { ResponseData } from '../server/router/me.playlists';
 import { trpc } from '../utils/trpc';
-
-export const mutation_create_input = z.object({
-	id: z.string().min(1, { message: 'You must select one of your playlist' }),
-	tags: z
-		.array(z.string())
-		.min(1, { message: 'You must include at least one tag' })
-});
-
-type Schema = z.infer<typeof mutation_create_input>;
 
 type TagOptionsProps = {
 	query: string;
@@ -67,15 +58,24 @@ const TagOptions = (props: TagOptionsProps) => {
 	);
 };
 
+export const createPlaylistInput = z.object({
+	id: z
+		.string({
+			required_error: 'You must select one of your playlist'
+		})
+		.min(1, { message: 'You must select one of your playlist' }),
+	tags: z
+		.array(z.string(), {
+			required_error: 'You must include at least one tag'
+		})
+		.min(1, { message: 'You must include at least one tag' })
+});
+
+type Schema = z.infer<typeof createPlaylistInput>;
+
 const Submit: NextPage = () => {
 	const getPlaylists = trpc.useInfiniteQuery(['me.playlists', { limit: 5 }], {
 		getNextPageParam: lastPage => lastPage.cursor
-	});
-
-	const createPlaylist = trpc.useMutation('playlists.create');
-
-	const form = useForm<Schema>({
-		resolver: zodResolver(mutation_create_input)
 	});
 
 	const [selectedPlaylist, setSelectedPlaylist] = useState<
@@ -83,22 +83,23 @@ const Submit: NextPage = () => {
 	>(null);
 
 	const [selectedTags, setSelectedTags] = useState<string[]>([]);
-
 	const [query, setQuery] = useState('');
 	const debouncedQuery: string = useDebounce<string>(query, 1000);
-
 	const tagsInputRef = useRef<HTMLInputElement>(null);
+
+	const createPlaylist = trpc.useMutation('playlists.create');
+
+	const form = useForm<Schema>({
+		resolver: zodResolver(createPlaylistInput)
+	});
 
 	const onSubmit = async (data: Schema) => {
 		try {
 			await createPlaylist.mutateAsync(data);
 			form.reset({ id: '', tags: [] });
+			setSelectedPlaylist(null);
 		} catch {}
 	};
-
-	useEffect(() => {
-		console.log('getPlaylists.data?.pages:', getPlaylists.data?.pages);
-	}, [getPlaylists.data?.pages]);
 
 	if (getPlaylists.isLoading) {
 		return (
@@ -136,10 +137,17 @@ const Submit: NextPage = () => {
 									render={({ field, formState }) => (
 										<>
 											<Listbox
-												value={selectedPlaylist}
-												onChange={selectedPlaylist => {
-													setSelectedPlaylist(selectedPlaylist);
-													field.onChange(selectedPlaylist?.id);
+												value={field.value}
+												onChange={id => {
+													field.onChange(id);
+
+													const relatedPlaylist = getPlaylists.data.pages
+														.flatMap(page => page.data)
+														.find(playlist => playlist.id === id);
+
+													if (relatedPlaylist) {
+														setSelectedPlaylist(relatedPlaylist);
+													}
 												}}
 												as="div"
 												className="relative"
@@ -156,7 +164,7 @@ const Submit: NextPage = () => {
 																	{group.data.map(playlist => (
 																		<Listbox.Option
 																			key={playlist.id}
-																			value={playlist}
+																			value={playlist.id}
 																			as={Fragment}
 																		>
 																			{({ active, selected }) => (
