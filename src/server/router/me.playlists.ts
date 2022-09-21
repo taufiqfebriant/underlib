@@ -113,10 +113,6 @@ export const mePlaylists = createRouter().query('me.playlists', {
 				}));
 
 			const next = getSpotifyPlaylistsResponse.data.next as string | null;
-			if (!next && totalRequests == 1) {
-				data.push(...playlists);
-				break;
-			}
 
 			if (
 				!next &&
@@ -137,10 +133,13 @@ export const mePlaylists = createRouter().query('me.playlists', {
 
 			data.push(...playlists);
 
-			if (next) {
-				getSpotifyPlaylistsParams.offset = parseInt(
-					new URL(next).searchParams.get('offset') as string
-				);
+			if (!next) {
+				break;
+			}
+
+			const offset = new URL(next).searchParams.get('offset');
+			if (offset) {
+				getSpotifyPlaylistsParams.offset = parseInt(offset);
 			}
 
 			totalRequests++;

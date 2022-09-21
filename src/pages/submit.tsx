@@ -75,7 +75,7 @@ type Schema = z.infer<typeof createPlaylistInput>;
 
 const Submit: NextPage = () => {
 	const getPlaylists = trpc.useInfiniteQuery(['me.playlists', { limit: 5 }], {
-		getNextPageParam: lastPage => lastPage.cursor
+		getNextPageParam: lastPage => lastPage.cursor ?? undefined
 	});
 
 	const [selectedPlaylist, setSelectedPlaylist] = useState<
@@ -93,9 +93,12 @@ const Submit: NextPage = () => {
 		resolver: zodResolver(createPlaylistInput)
 	});
 
+	const utils = trpc.useContext();
 	const onSubmit = async (data: Schema) => {
 		try {
 			await createPlaylist.mutateAsync(data);
+			await utils.invalidateQueries(['me.playlists']);
+
 			form.reset({ id: '', tags: [] });
 			setSelectedPlaylist(null);
 		} catch {}
@@ -158,7 +161,7 @@ const Submit: NextPage = () => {
 															<span>{selectedPlaylist?.name}</span>
 															{open ? <FaChevronUp /> : <FaChevronDown />}
 														</Listbox.Button>
-														<Listbox.Options className="mt-1 rounded-md divide-y divide-[#3c3c3c] overflow-y-auto max-h-60 absolute w-full z-10 shadow shadow-white/40">
+														<Listbox.Options className="mt-1 rounded-md divide-y divide-[#3c3c3c] overflow-y-auto max-h-60 absolute w-full z-10 border border-[#3c3c3c]">
 															{getPlaylists.data?.pages.map((group, i) => (
 																<Fragment key={i}>
 																	{group.data.map(playlist => (
@@ -212,7 +215,7 @@ const Submit: NextPage = () => {
 															{getPlaylists.hasNextPage ? (
 																<li className="bg-[#292929] flex items-center h-20 justify-center">
 																	{getPlaylists.isFetchingNextPage ? (
-																		<Spinner className="text-[#3c3c3c] fill-white w-4 h-4" />
+																		<Spinner className="text-[#3c3c3c] fill-white w-5 h-5" />
 																	) : null}
 
 																	{getPlaylists.hasNextPage &&
@@ -325,13 +328,15 @@ const Submit: NextPage = () => {
 							<div className="flex justify-end mt-6">
 								<button
 									type="submit"
-									disabled={createPlaylist.isLoading}
+									disabled={
+										form.formState.isSubmitting || createPlaylist.isLoading
+									}
 									className={clsx(
 										'bg-white px-6 py-2 text-[#151515] rounded-md hover:bg-gray-200 transition-colors font-bold disabled:opacity-50',
 										{ 'flex gap-x-2 items-center': true }
 									)}
 								>
-									{createPlaylist.isLoading ? (
+									{form.formState.isSubmitting || createPlaylist.isLoading ? (
 										<>
 											<Spinner className="text-[#989898] fill-[#151515] w-5 h-5" />
 											<span>Submitting...</span>
