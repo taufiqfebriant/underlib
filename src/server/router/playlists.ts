@@ -5,7 +5,6 @@ import { customAlphabet } from 'nanoid';
 import { Session } from 'next-auth';
 import { Paging, SimplifiedPlaylist } from 'spotify-types';
 import { z } from 'zod';
-import { createPlaylistInput } from '../../pages/submit';
 import { createRouter } from './context';
 
 const query_all_input = z.object({
@@ -189,7 +188,18 @@ export const playlistsRouter = createRouter()
 		}
 	})
 	.mutation('create', {
-		input: createPlaylistInput,
+		input: z.object({
+			id: z
+				.string({
+					required_error: 'You must select one of your playlist'
+				})
+				.min(1, { message: 'You must select one of your playlist' }),
+			tags: z
+				.array(z.string(), {
+					required_error: 'You must include at least one tag'
+				})
+				.min(1, { message: 'You must include at least one tag' })
+		}),
 		async resolve({ ctx, input }) {
 			if (!ctx.session) {
 				throw new TRPCError({ code: 'UNAUTHORIZED' });

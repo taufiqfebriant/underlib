@@ -31,7 +31,11 @@ const TagOptions = (props: TagOptionsProps) => {
 		return <div className={defaultClasses}>Something went wrong</div>;
 	}
 
-	const isNew = props.query.length > 0 && !getTags.data?.data.length;
+	const isNew =
+		props.query.length > 0 &&
+		!getTags.data?.data.length &&
+		!props.except.includes(props.query);
+
 	if (isNew) {
 		return (
 			<Combobox.Option
@@ -58,7 +62,7 @@ const TagOptions = (props: TagOptionsProps) => {
 	);
 };
 
-export const createPlaylistInput = z.object({
+const createPlaylistInput = z.object({
 	id: z
 		.string({
 			required_error: 'You must select one of your playlist'
@@ -82,7 +86,6 @@ const Submit: NextPage = () => {
 		ResponseData[number] | null
 	>(null);
 
-	const [selectedTags, setSelectedTags] = useState<string[]>([]);
 	const [query, setQuery] = useState('');
 	const debouncedQuery: string = useDebounce<string>(query, 1000);
 	const tagsInputRef = useRef<HTMLInputElement>(null);
@@ -129,189 +132,194 @@ const Submit: NextPage = () => {
 							others find it
 						</p>
 						<form onSubmit={form.handleSubmit(onSubmit)} className="mt-10">
-							<div>
-								<label htmlFor="playlist" className="text-lg">
-									Playlist
-								</label>
-								<p className="text-[#989898] text-sm">Pick a playlist</p>
-								<Controller
-									control={form.control}
-									name="id"
-									render={({ field, formState }) => (
-										<>
-											<Listbox
-												value={field.value}
-												onChange={id => {
-													field.onChange(id);
+							<Controller
+								control={form.control}
+								name="id"
+								defaultValue=""
+								render={({ field, formState }) => (
+									<>
+										<Listbox
+											value={field.value}
+											onChange={id => {
+												field.onChange(id);
 
-													const relatedPlaylist = getPlaylists.data.pages
-														.flatMap(page => page.data)
-														.find(playlist => playlist.id === id);
+												const relatedPlaylist = getPlaylists.data.pages
+													.flatMap(page => page.data)
+													.find(playlist => playlist.id === id);
 
-													if (relatedPlaylist) {
-														setSelectedPlaylist(relatedPlaylist);
-													}
-												}}
-												as="div"
-												className="relative"
-											>
-												{({ open }) => (
-													<>
-														<Listbox.Button className="w-full mt-2 bg-[#292929] px-4 h-10 rounded-md flex items-center justify-between">
-															<span>{selectedPlaylist?.name}</span>
-															{open ? <FaChevronUp /> : <FaChevronDown />}
-														</Listbox.Button>
-														<Listbox.Options className="mt-1 rounded-md divide-y divide-[#3c3c3c] overflow-y-auto max-h-60 absolute w-full z-10 border border-[#3c3c3c]">
-															{getPlaylists.data?.pages.map((group, i) => (
-																<Fragment key={i}>
-																	{group.data.map(playlist => (
-																		<Listbox.Option
-																			key={playlist.id}
-																			value={playlist.id}
-																			as={Fragment}
-																		>
-																			{({ active, selected }) => (
-																				<li
-																					className={clsx(
-																						`px-4 hover:bg-[#3c3c3c] cursor-pointer flex items-center gap-x-4 h-20 transition-colors`,
-																						{
-																							'bg-[#3c3c3c]': selected || active
-																						},
-																						{
-																							'bg-[#292929]':
-																								!selected && !active
-																						}
-																					)}
-																				>
-																					{playlist.images.length &&
-																					playlist.images[0]?.url ? (
-																						<Image
-																							src={playlist.images[0].url}
-																							alt="Playlist image"
-																							width={48}
-																							height={48}
-																							className="object-cover rounded-md"
+												if (relatedPlaylist) {
+													setSelectedPlaylist(relatedPlaylist);
+												}
+											}}
+											as="div"
+											className="relative"
+										>
+											{({ open }) => (
+												<>
+													<Listbox.Label className="text-lg">
+														Playlist
+													</Listbox.Label>
+													<p className="text-[#989898] text-sm">
+														Pick a playlist
+													</p>
+													<Listbox.Button className="w-full mt-2 bg-[#292929] px-4 h-10 rounded-md flex items-center justify-between">
+														<span>{selectedPlaylist?.name}</span>
+														{open ? <FaChevronUp /> : <FaChevronDown />}
+													</Listbox.Button>
+													<Listbox.Options className="mt-1 rounded-md divide-y divide-[#3c3c3c] overflow-y-auto max-h-60 absolute w-full z-10 border border-[#3c3c3c]">
+														{getPlaylists.data?.pages.map((group, i) => (
+															<Fragment key={i}>
+																{group.data.map(playlist => (
+																	<Listbox.Option
+																		key={playlist.id}
+																		value={playlist.id}
+																		as={Fragment}
+																	>
+																		{({ active, selected }) => (
+																			<li
+																				className={clsx(
+																					`px-4 hover:bg-[#3c3c3c] cursor-pointer flex items-center gap-x-4 h-20 transition-colors`,
+																					{
+																						'bg-[#3c3c3c]': selected || active
+																					},
+																					{
+																						'bg-[#292929]': !selected && !active
+																					}
+																				)}
+																			>
+																				{playlist.images.length &&
+																				playlist.images[0]?.url ? (
+																					<Image
+																						src={playlist.images[0].url}
+																						alt="Playlist image"
+																						width={48}
+																						height={48}
+																						className="object-cover rounded-md"
+																					/>
+																				) : null}
+																				<div>
+																					<h1 className="block">
+																						{playlist.name}
+																					</h1>
+																					{playlist.description ? (
+																						<p
+																							className="text-sm text-[#989898] truncate"
+																							dangerouslySetInnerHTML={{
+																								__html: playlist.description
+																							}}
 																						/>
 																					) : null}
-																					<div>
-																						<h1 className="block">
-																							{playlist.name}
-																						</h1>
-																						{playlist.description ? (
-																							<p
-																								className="text-sm text-[#989898] truncate"
-																								dangerouslySetInnerHTML={{
-																									__html: playlist.description
-																								}}
-																							/>
-																						) : null}
-																					</div>
-																				</li>
-																			)}
-																		</Listbox.Option>
-																	))}
-																</Fragment>
-															))}
-															{getPlaylists.hasNextPage ? (
-																<li className="bg-[#292929] flex items-center h-20 justify-center">
-																	{getPlaylists.isFetchingNextPage ? (
-																		<Spinner className="text-[#3c3c3c] fill-white w-5 h-5" />
-																	) : null}
+																				</div>
+																			</li>
+																		)}
+																	</Listbox.Option>
+																))}
+															</Fragment>
+														))}
+														{getPlaylists.hasNextPage ? (
+															<li className="bg-[#292929] flex items-center h-20 justify-center">
+																{getPlaylists.isFetchingNextPage ? (
+																	<Spinner className="text-[#3c3c3c] fill-white w-5 h-5" />
+																) : null}
 
-																	{getPlaylists.hasNextPage &&
-																	!getPlaylists.isFetchingNextPage ? (
-																		<>
-																			<button
-																				type="button"
-																				className="bg-[#3c3c3c] px-4 py-2 rounded-md hover:bg-[#686868] transition-colors"
-																				onClick={() =>
-																					getPlaylists.fetchNextPage()
-																				}
-																			>
-																				Load more
-																			</button>
-																		</>
-																	) : null}
-																</li>
-															) : null}
-														</Listbox.Options>
-													</>
-												)}
-											</Listbox>
-											{formState.errors.id?.message ? (
-												<p className="text-red-600 mt-2">
-													{form.formState.errors.id?.message}
-												</p>
-											) : null}
-										</>
-									)}
-								/>
-							</div>
+																{getPlaylists.hasNextPage &&
+																!getPlaylists.isFetchingNextPage ? (
+																	<>
+																		<button
+																			type="button"
+																			className="bg-[#3c3c3c] px-4 py-2 rounded-md hover:bg-[#686868] transition-colors"
+																			onClick={() =>
+																				getPlaylists.fetchNextPage()
+																			}
+																		>
+																			Load more
+																		</button>
+																	</>
+																) : null}
+															</li>
+														) : null}
+													</Listbox.Options>
+												</>
+											)}
+										</Listbox>
+										{formState.errors.id?.message ? (
+											<p className="text-red-600 mt-2">
+												{form.formState.errors.id?.message}
+											</p>
+										) : null}
+									</>
+								)}
+							/>
 							<div className="mt-6">
-								<label htmlFor="playlist" className="text-lg">
-									Tags
-								</label>
-								<p className="text-[#989898] text-sm">
-									Add some tags that relate to your playlist
-								</p>
-								{selectedTags.length ? (
-									<div className="flex gap-2 mt-2 flex-wrap">
-										{selectedTags.map(selectedTag => (
-											<div
-												key={selectedTag}
-												className="bg-[#292929] pl-3 pr-1 py-1 rounded-md flex items-center gap-x-2"
-											>
-												<span className="text-sm">{selectedTag}</span>
-												<button
-													type="button"
-													className="bg-[#3c3c3c] hover:bg-[#686868] transition-colors rounded-md p-1"
-													onClick={() =>
-														setSelectedTags(prev =>
-															prev.filter(tag => tag !== selectedTag)
-														)
-													}
-												>
-													<MdClose />
-												</button>
-											</div>
-										))}
-									</div>
-								) : null}
 								<Controller
 									control={form.control}
 									name="tags"
+									defaultValue={[]}
 									render={({ field, formState }) => (
 										<>
 											<Combobox
-												value={selectedTags}
-												onChange={selectedTags => {
-													setSelectedTags(selectedTags);
+												value={field.value}
+												onChange={tag => {
+													field.onChange(tag);
 													setQuery('');
 
 													if (tagsInputRef.current) {
 														tagsInputRef.current.value = '';
 														tagsInputRef.current.focus();
 													}
-
-													field.onChange(
-														selectedTags.map(selectedTag => selectedTag)
-													);
 												}}
 												multiple
 												as="div"
 												className="relative"
 											>
+												<Combobox.Label className="text-lg">
+													Tags
+												</Combobox.Label>
+
+												<p className="text-[#989898] text-sm">
+													Add some tags that relate to your playlist
+												</p>
+
+												{field.value.length ? (
+													<div className="flex gap-2 mt-2 flex-wrap">
+														{field.value.map(tag => (
+															<div
+																key={tag}
+																className="bg-[#292929] pl-3 pr-1 py-1 rounded-md flex items-center gap-x-2"
+															>
+																<span className="text-sm">{tag}</span>
+																<button
+																	type="button"
+																	className="bg-[#3c3c3c] hover:bg-[#686868] transition-colors rounded-md p-1"
+																	onClick={() => {
+																		const currentTags = form.getValues('tags');
+																		form.setValue(
+																			'tags',
+																			currentTags.filter(
+																				currentTag => currentTag !== tag
+																			)
+																		);
+																	}}
+																>
+																	<MdClose />
+																</button>
+															</div>
+														))}
+													</div>
+												) : null}
+
 												<Combobox.Input
 													onChange={e => setQuery(e.target.value)}
 													className="w-full bg-[#292929] px-4 h-10 rounded-md flex items-center justify-between focus:outline-none mt-2"
 													ref={tagsInputRef}
 													placeholder="Chill, Happy, Young, etc."
 												/>
+
 												<Combobox.Options className="mt-1 rounded-md divide-y divide-gray-800 overflow-y-auto max-h-60 absolute w-full">
-													{debouncedQuery ? (
+													{query && debouncedQuery ? (
 														<TagOptions
 															query={debouncedQuery}
-															except={selectedTags}
+															except={form.getValues('tags')}
 														/>
 													) : null}
 												</Combobox.Options>
