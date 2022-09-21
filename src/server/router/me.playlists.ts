@@ -40,10 +40,6 @@ const getSpotifyPlaylists = async (params: GetSpotifyPlaylistsParams) => {
 		}
 	);
 
-	// response.data.items = response.data.items.filter(
-	// 	playlist => playlist.owner.id === params.user_id
-	// );
-
 	return response;
 };
 
@@ -52,7 +48,6 @@ export type ResponseData = Pick<
 	'id' | 'name' | 'description' | 'images'
 >[];
 
-// TODO: Ngembalikan playlist buatan user yang login aja & yang belum disubmit
 export const mePlaylists = createRouter().query('me.playlists', {
 	input: z.object({
 		limit: z.number().min(1).max(5),
@@ -87,17 +82,29 @@ export const mePlaylists = createRouter().query('me.playlists', {
 			getSpotifyPlaylistsParams.offset = input.cursor;
 		}
 
-		const data: ResponseData = [];
+		let totalRequests = 1;
 		let cursor: number | null = null;
 
+		const data: ResponseData = [];
 		while (data.length < input.limit) {
 			const getSpotifyPlaylistsResponse = await getSpotifyPlaylists(
 				getSpotifyPlaylistsParams
 			);
 
-			const items = getSpotifyPlaylistsResponse.data.items
-				.slice(undefined, input.limit - data.length)
-				.filter(playlist => !submittedPlaylistIds.includes(playlist.id))
+			const items = getSpotifyPlaylistsResponse.data.items;
+
+			let playlists = items
+				.filter(playlist => {
+					if (submittedPlaylistIds.includes(playlist.id)) {
+						return false;
+					}
+
+					if (playlist.owner.id !== ctx.session?.user.id) {
+						return false;
+					}
+
+					return true;
+				})
 				.map(({ id, name, description, images }) => ({
 					id,
 					name,
@@ -105,17 +112,38 @@ export const mePlaylists = createRouter().query('me.playlists', {
 					images
 				}));
 
-			data.push(...items);
-
-			const next = getSpotifyPlaylistsResponse.data.next;
-			if (!next) {
-				cursor = null;
+			const next = getSpotifyPlaylistsResponse.data.next as string | null;
+			if (!next && totalRequests == 1) {
+				data.push(...playlists);
 				break;
 			}
 
-			cursor = parseInt(new URL(next).searchParams.get('offset') as string);
+			if (
+				!next &&
+				totalRequests > 1 &&
+				data.length + playlists.length > input.limit
+			) {
+				playlists = playlists.slice(undefined, input.limit - data.length);
 
-			getSpotifyPlaylistsParams.offset = cursor;
+				playlists.forEach((playlist, index) => {
+					if (playlist.id === playlists[playlists.length - 1]?.id) {
+						cursor = index + 1;
+						if (totalRequests > 1) {
+							cursor += input.limit;
+						}
+					}
+				});
+			}
+
+			data.push(...playlists);
+
+			if (next) {
+				getSpotifyPlaylistsParams.offset = parseInt(
+					new URL(next).searchParams.get('offset') as string
+				);
+			}
+
+			totalRequests++;
 		}
 
 		return { data, cursor };

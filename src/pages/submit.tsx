@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import clsx from 'clsx';
 import type { NextPage } from 'next';
 import Image from 'next/image';
-import { Fragment, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { FaChevronDown, FaChevronUp, FaExternalLinkAlt } from 'react-icons/fa';
 import { MdClose } from 'react-icons/md';
@@ -72,7 +72,7 @@ const Submit: NextPage = () => {
 		getNextPageParam: lastPage => lastPage.cursor
 	});
 
-	const create_playlist = trpc.useMutation('playlists.create');
+	const createPlaylist = trpc.useMutation('playlists.create');
 
 	const form = useForm<Schema>({
 		resolver: zodResolver(mutation_create_input)
@@ -91,12 +91,21 @@ const Submit: NextPage = () => {
 
 	const onSubmit = async (data: Schema) => {
 		try {
-			await create_playlist.mutateAsync(data);
+			await createPlaylist.mutateAsync(data);
+			form.reset({ id: '', tags: [] });
 		} catch {}
 	};
 
+	useEffect(() => {
+		console.log('getPlaylists.data?.pages:', getPlaylists.data?.pages);
+	}, [getPlaylists.data?.pages]);
+
 	if (getPlaylists.isLoading) {
-		return <p>Loading...</p>;
+		return (
+			<main className="min-h-screen flex items-center justify-center">
+				<Spinner className="text-[#292929] fill-white w-8 h-8" />
+			</main>
+		);
 	}
 
 	if (getPlaylists.error) {
@@ -141,7 +150,7 @@ const Submit: NextPage = () => {
 															<span>{selectedPlaylist?.name}</span>
 															{open ? <FaChevronUp /> : <FaChevronDown />}
 														</Listbox.Button>
-														<Listbox.Options className="mt-1 rounded-md divide-y divide-[#3c3c3c] overflow-y-auto max-h-60 absolute w-full z-10">
+														<Listbox.Options className="mt-1 rounded-md divide-y divide-[#3c3c3c] overflow-y-auto max-h-60 absolute w-full z-10 shadow shadow-white/40">
 															{getPlaylists.data?.pages.map((group, i) => (
 																<Fragment key={i}>
 																	{group.data.map(playlist => (
@@ -195,7 +204,7 @@ const Submit: NextPage = () => {
 															{getPlaylists.hasNextPage ? (
 																<li className="bg-[#292929] flex items-center h-20 justify-center">
 																	{getPlaylists.isFetchingNextPage ? (
-																		<Spinner />
+																		<Spinner className="text-[#3c3c3c] fill-white w-4 h-4" />
 																	) : null}
 
 																	{getPlaylists.hasNextPage &&
@@ -308,9 +317,20 @@ const Submit: NextPage = () => {
 							<div className="flex justify-end mt-6">
 								<button
 									type="submit"
-									className="bg-white px-6 py-2 text-[#151515] rounded-md hover:bg-gray-200 transition-colors font-bold"
+									disabled={createPlaylist.isLoading}
+									className={clsx(
+										'bg-white px-6 py-2 text-[#151515] rounded-md hover:bg-gray-200 transition-colors font-bold disabled:opacity-50',
+										{ 'flex gap-x-2 items-center': true }
+									)}
 								>
-									Submit
+									{createPlaylist.isLoading ? (
+										<>
+											<Spinner className="text-[#989898] fill-[#151515] w-5 h-5" />
+											<span>Submitting...</span>
+										</>
+									) : (
+										<span>Submit</span>
+									)}
 								</button>
 							</div>
 						</form>
