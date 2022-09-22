@@ -92,16 +92,16 @@ const Playlists = (props: PlaylistsProps) => {
 									/>
 								) : null}
 							</div>
-							<div className="px-3 pt-2 pb-4 flex flex-col justify-between flex-1">
-								<h1 className="font-semibold flex-1">{playlist.name}</h1>
-								<p className="text-sm text-[#989898] line-clamp-2 flex-auto">
+							<div className="px-3 pt-2 pb-3 flex flex-col justify-between flex-1">
+								<h1 className="font-semibold">{playlist.name}</h1>
+								<p className="text-sm text-[#989898] line-clamp-2 flex-1 mt-1">
 									{playlist.owner.display_name}
 								</p>
-								<div className="flex gap-x-2">
+								<div className="flex gap-x-2 overflow-y-auto">
 									{playlist.tags.map(tag => (
 										<div
 											key={tag.name}
-											className="bg-[#3c3c3c] rounded-md px-2 py-1 text-xs"
+											className="bg-[#3c3c3c] rounded-md px-2 py-1 text-xs whitespace-nowrap"
 										>
 											{tag.name}
 										</div>
