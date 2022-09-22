@@ -186,25 +186,20 @@ const Home: NextPage = () => {
 								))}
 							</div>
 						) : null}
-						<label
-							className={clsx(
-								'inline-block',
-								{ 'mt-4': selectedTags.length },
-								{ 'mt-0': !selectedTags.length }
-							)}
-						>
-							Tags
-						</label>
 						<Combobox
 							value={selectedTags}
 							onChange={tags => setSelectedTags(tags)}
 							multiple
 							as="div"
-							className="mt-2"
+							className={clsx(
+								{ 'mt-4': selectedTags.length },
+								{ 'mt-0': !selectedTags.length }
+							)}
 						>
+							<Combobox.Label>Tags</Combobox.Label>
 							<Combobox.Input
 								onChange={e => setQuery(e.target.value)}
-								className="bg-[#292929] h-10 rounded-md px-4 w-full"
+								className="bg-[#292929] h-10 rounded-md px-4 w-full mt-2"
 								placeholder="Search tags"
 							/>
 							<Combobox.Options className="mt-2 rounded-md divide-y divide-gray-800 overflow-y-auto max-h-60">
