@@ -80,7 +80,7 @@ const Nav = () => {
 	return (
 		<nav
 			className={clsx(
-				'py-4 justify-between fixed w-full bg-[#151515] transition-shadow z-10 top-0',
+				'py-4 justify-between fixed w-full bg-[#151515] transition-shadow z-10 top-0 left-0',
 				{ 'shadow-sm shadow-[#3c3c3c]': scrollPosition },
 				{ 'shadow-none': !scrollPosition }
 			)}

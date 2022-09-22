@@ -16,7 +16,7 @@ export const tagsRouter = createRouter().query('all', {
 			},
 			where: {
 				name: {
-					contains: input.q ?? undefined,
+					startsWith: input.q ?? undefined,
 					notIn: input.except?.length ? input.except : undefined
 				}
 			},

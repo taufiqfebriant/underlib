@@ -37,22 +37,26 @@ type PlaylistsProps = {
 };
 
 const Playlists = (props: PlaylistsProps) => {
-	const get_playlists = trpc.useInfiniteQuery([
+	const getPlaylists = trpc.useInfiniteQuery([
 		'playlists.all',
 		{ limit: 8, tags: props.tags }
 	]);
 
-	if (get_playlists.isLoading) {
+	if (getPlaylists.isLoading) {
 		return <p>Loading...</p>;
 	}
 
-	if (get_playlists.error) {
+	if (getPlaylists.error) {
 		return <p>Something went wrong</p>;
+	}
+
+	if (!getPlaylists.data?.pages[0]?.data.length) {
+		return <p>There&apos;s no playlists yet</p>;
 	}
 
 	return (
 		<div className="grid grid-cols-[repeat(4,_minmax(0,_220px))] w-full justify-between gap-y-6">
-			{get_playlists.data?.pages.map((group, i) => (
+			{getPlaylists.data?.pages.map((group, i) => (
 				<Fragment key={i}>
 					{group.data.map(playlist => (
 						<div
@@ -155,7 +159,7 @@ const Home: NextPage = () => {
 				</div>
 			</div>
 			<div
-				className="mb-10 max-w-6xl mx-auto scroll-mt-24"
+				className="max-w-6xl mx-auto min-h-screen scroll-mt-24"
 				ref={playlistsSectionRef}
 			>
 				<h1 className="font-bold text-3xl">All playlists</h1>
