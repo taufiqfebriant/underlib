@@ -58,59 +58,6 @@ export type ResponseData = Pick<
 const customNanoId = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 20);
 
 export const playlistsRouter = createRouter()
-	// TODO: pindah ke me.ts
-	.query('all-from-spotify', {
-		input: query_all_input,
-		async resolve({ ctx, input }) {
-			if (!ctx.session) {
-				throw new TRPCError({ code: 'UNAUTHORIZED' });
-			}
-
-			const get_owned_playlists_params: GetOwnedPlaylistsParams = {
-				user_id: ctx.session.user.id,
-				access_token: ctx.session.accessToken,
-				limit: input.limit
-			};
-
-			if (input.cursor) {
-				get_owned_playlists_params.offset = input.cursor;
-			}
-
-			const data: ResponseData = [];
-			let cursor: string | null = null;
-
-			while (data.length < input.limit) {
-				const get_owned_playlists_response = await get_owned_playlists(
-					get_owned_playlists_params
-				);
-
-				const items = get_owned_playlists_response.data.items;
-				const next = get_owned_playlists_response.data.next;
-
-				data.push(
-					...items
-						.slice(undefined, input.limit - data.length)
-						.map(({ id, name, description, images }) => ({
-							id,
-							name,
-							description,
-							images
-						}))
-				);
-
-				if (!next) {
-					break;
-				}
-
-				cursor = new URL(next).searchParams.get('offset');
-			}
-
-			return {
-				data,
-				cursor: cursor ? parseInt(cursor) : null
-			};
-		}
-	})
 	.query('all', {
 		input: z.object({
 			limit: z.number().min(1).max(8),

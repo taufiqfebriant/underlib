@@ -1,10 +1,11 @@
 import { Combobox } from '@headlessui/react';
 import clsx from 'clsx';
 import { NextPage } from 'next';
-import Image from 'next/image';
+import Image from 'next/future/image';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { MdClose, MdOutlineArrowDownward } from 'react-icons/md';
 import Typed from 'typed.js';
+import Spinner from '../components/Spinner';
 import { useDebounce } from '../hooks/use-debounce';
 import { trpc } from '../utils/trpc';
 
@@ -43,35 +44,54 @@ const Playlists = (props: PlaylistsProps) => {
 	]);
 
 	if (getPlaylists.isLoading) {
-		return <p>Loading...</p>;
+		return (
+			<div className="flex justify-center w-full">
+				<Spinner className="text-[#292929] fill-white w-8 h-8" />
+			</div>
+		);
 	}
 
-	if (getPlaylists.error) {
-		return <p>Something went wrong</p>;
+	if (getPlaylists.isError) {
+		return (
+			<div className="text-center w-full">
+				<h1 className="text-2xl font-bold">Something went wrong</h1>
+				<p className="text-[#989898] mt-2 font-medium">
+					We&apos;re really sorry. Please try to refresh the page.
+				</p>
+			</div>
+		);
 	}
 
 	if (!getPlaylists.data?.pages[0]?.data.length) {
-		return <p>There&apos;s no playlists yet</p>;
+		return (
+			<div className="text-center w-full">
+				<h1 className="text-2xl font-bold">No playlists found</h1>
+				<p className="text-[#989898] mt-2 font-medium">
+					We couldn&apos;t find what you searched for. Try search again.
+				</p>
+			</div>
+		);
 	}
 
 	return (
-		<div className="grid grid-cols-[repeat(4,_minmax(0,_220px))] w-full justify-between gap-y-6">
+		<div className="grid grid-cols-[repeat(4,_minmax(0,_210px))] w-full justify-between gap-y-6">
 			{getPlaylists.data?.pages.map((group, i) => (
 				<Fragment key={i}>
 					{group.data.map(playlist => (
 						<div
 							key={playlist.id}
-							className="bg-[#292929] rounded-md overflow-hidden w-[220px] h-[22rem] flex flex-col"
+							className="bg-[#292929] rounded-md overflow-hidden w-[210px] h-[22rem] flex flex-col"
 						>
-							{playlist.images[0] ? (
-								<Image
-									src={playlist.images[0].url}
-									width={220}
-									height={220}
-									className="object-cover"
-									alt="Playlist image"
-								/>
-							) : null}
+							<div className="w-full h-[210px] relative">
+								{playlist.images[0] ? (
+									<Image
+										src={playlist.images[0].url}
+										alt="Playlist image"
+										fill
+										className="object-cover"
+									/>
+								) : null}
+							</div>
 							<div className="px-3 pt-2 pb-4 flex flex-col justify-between flex-1">
 								<h1 className="font-semibold flex-1">{playlist.name}</h1>
 								<p className="text-sm text-[#989898] line-clamp-2 flex-auto">
@@ -159,12 +179,12 @@ const Home: NextPage = () => {
 				</div>
 			</div>
 			<div
-				className="max-w-6xl mx-auto min-h-screen scroll-mt-24"
+				className="max-w-6xl mx-auto min-h-screen scroll-mt-24 mb-10"
 				ref={playlistsSectionRef}
 			>
 				<h1 className="font-bold text-3xl">All playlists</h1>
-				<div className="flex gap-x-6 mt-6">
-					<div className="sticky top-20 block w-64">
+				<div className="flex gap-x-6 mt-6 items-start">
+					<div className="sticky top-24 w-56 shrink-0">
 						{selectedTags.length ? (
 							<div className="flex gap-2 flex-wrap">
 								{selectedTags.map(tag => (
@@ -192,6 +212,7 @@ const Home: NextPage = () => {
 							multiple
 							as="div"
 							className={clsx(
+								'w-full',
 								{ 'mt-4': selectedTags.length },
 								{ 'mt-0': !selectedTags.length }
 							)}
