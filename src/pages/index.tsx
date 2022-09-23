@@ -149,20 +149,17 @@ const Home: NextPage = () => {
 
 	return (
 		<main>
-			<div className="h-screen flex flex-col justify-center">
+			<div className="h-screen flex flex-col justify-center px-6 md:px-0">
 				<div>
-					<div className="flex flex-col font-bold text-5xl gap-y-4 text-center">
-						<h1>Find a perfect Spotify playlist</h1>
-						<h1>
-							when <span ref={typeElementRef}></span>
-						</h1>
-					</div>
-					<p className="max-w-2xl mx-auto mt-6 text-lg text-[#989898] font-medium text-center">
-						Most of the playlists have cool names. That&apos;s why it&apos;s
-						hard to find. With tags, we help you discover awesome Spotify
-						playlists easier for your current moment or mood.
+					<h1 className="font-bold text-3xl md:text-5xl text-left h-[7.5ex] leading-[2.5ex]">
+						Find a perfect Spotify playlist when <span ref={typeElementRef} />
+					</h1>
+					<p className="max-w-2xl mx-auto mt-4 text-[#989898] text-left md:text-center">
+						Most of the playlists have cool names which make them hard to find.
+						Tags allow you to discover them easily based on your current mood or
+						moment.
 					</p>
-					<div className="flex justify-center mt-10">
+					<div className="flex justify-start md:justify-center mt-6 md:mt-10">
 						<button
 							type="button"
 							className="bg-white px-6 py-2 text-[#151515] rounded-md hover:bg-gray-200 transition-colors flex items-center gap-x-2 font-bold"

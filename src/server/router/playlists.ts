@@ -3,8 +3,9 @@ import { TRPCError } from '@trpc/server';
 import axios, { AxiosResponse } from 'axios';
 import { customAlphabet } from 'nanoid';
 import { Session } from 'next-auth';
-import { Paging, SimplifiedPlaylist } from 'spotify-types';
+import { AccessToken, Paging, SimplifiedPlaylist } from 'spotify-types';
 import { z } from 'zod';
+import { env } from '../../env/server.mjs';
 import { createRouter } from './context';
 
 const query_all_input = z.object({
@@ -65,6 +66,15 @@ export const playlistsRouter = createRouter()
 			tags: z.array(z.string()).nullish()
 		}),
 		async resolve({ ctx, input }) {
+			const data: (Pick<
+				SimplifiedPlaylist,
+				'id' | 'name' | 'description' | 'images' | 'owner'
+			> &
+				Pick<
+					Prisma.PlaylistGetPayload<{ select: typeof playlistsSelect }>,
+					'tags'
+				>)[] = [];
+
 			const playlistsSelect = Prisma.validator<Prisma.PlaylistSelect>()({
 				id: true,
 				tags: {
@@ -89,6 +99,32 @@ export const playlistsRouter = createRouter()
 				}
 			});
 
+			if (!playlists.length) {
+				return { data };
+			}
+
+			const encodedString = Buffer.from(
+				`${env.SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`
+			).toString('base64');
+
+			const getAccessTokenParams = new URLSearchParams({
+				grant_type: 'refresh_token',
+				refresh_token: env.SPOTIFY_REFRESH_TOKEN
+			}).toString();
+
+			const getAccessToken = await axios.post<AccessToken>(
+				'https://accounts.spotify.com/api/token',
+				getAccessTokenParams,
+				{
+					headers: {
+						Authorization: `Basic ${encodedString}`,
+						'Content-Type': 'application/x-www-form-urlencoded'
+					}
+				}
+			);
+
+			const accessToken = getAccessToken.data.access_token;
+
 			const spotifyPlaylistPromises = playlists.map(async playlist => {
 				const spotifyResponse: AxiosResponse<
 					Pick<
@@ -101,7 +137,7 @@ export const playlistsRouter = createRouter()
 						headers: {
 							Accept: 'application/json',
 							'Content-Type': 'application/json',
-							Authorization: `Bearer ${ctx.session?.accessToken}`
+							Authorization: `Bearer ${accessToken}`
 						},
 						params: {
 							fields: 'id,name,description,images,owner'
@@ -112,14 +148,6 @@ export const playlistsRouter = createRouter()
 				return spotifyResponse.data;
 			});
 
-			const data: (Pick<
-				SimplifiedPlaylist,
-				'id' | 'name' | 'description' | 'images' | 'owner'
-			> &
-				Pick<
-					Prisma.PlaylistGetPayload<{ select: typeof playlistsSelect }>,
-					'tags'
-				>)[] = [];
 			for await (const spotifyPlaylist of spotifyPlaylistPromises) {
 				const relatedPlaylist = playlists.find(
 					playlist => playlist.id === spotifyPlaylist.id
