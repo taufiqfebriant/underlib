@@ -1,10 +1,10 @@
 import { Combobox } from '@headlessui/react';
 import clsx from 'clsx';
 import { NextPage } from 'next';
-import Image from 'next/future/image';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { MdClose, MdOutlineArrowDownward } from 'react-icons/md';
 import Typed from 'typed.js';
+import { PlaylistCard } from '../components/PlaylistCard';
 import Spinner from '../components/Spinner';
 import { useDebounce } from '../hooks/use-debounce';
 import { trpc } from '../utils/trpc';
@@ -74,41 +74,11 @@ const Playlists = (props: PlaylistsProps) => {
 	}
 
 	return (
-		<div className="grid grid-cols-[repeat(4,_minmax(0,_210px))] w-full justify-between gap-y-6">
+		<div className="grid grid-cols-1 md:grid-cols-[repeat(4,_minmax(0,_210px))] w-full justify-between gap-y-4 md:gap-y-6">
 			{getPlaylists.data?.pages.map((group, i) => (
 				<Fragment key={i}>
 					{group.data.map(playlist => (
-						<div
-							key={playlist.id}
-							className="bg-[#292929] rounded-md overflow-hidden w-[210px] h-[22rem] flex flex-col"
-						>
-							<div className="w-full h-[210px] relative">
-								{playlist.images[0] ? (
-									<Image
-										src={playlist.images[0].url}
-										alt="Playlist image"
-										fill
-										className="object-cover"
-									/>
-								) : null}
-							</div>
-							<div className="px-3 pt-2 pb-3 flex flex-col justify-between flex-1">
-								<h1 className="font-semibold">{playlist.name}</h1>
-								<p className="text-sm text-[#989898] line-clamp-2 flex-1 mt-1">
-									{playlist.owner.display_name}
-								</p>
-								<div className="flex gap-x-2 overflow-y-auto">
-									{playlist.tags.map(tag => (
-										<div
-											key={tag.name}
-											className="bg-[#3c3c3c] rounded-md px-2 py-1 text-xs whitespace-nowrap"
-										>
-											{tag.name}
-										</div>
-									))}
-								</div>
-							</div>
-						</div>
+						<PlaylistCard key={playlist.id} data={playlist} />
 					))}
 				</Fragment>
 			))}
@@ -148,40 +118,38 @@ const Home: NextPage = () => {
 	}, []);
 
 	return (
-		<main>
-			<div className="h-screen flex flex-col justify-center px-6 md:px-0">
-				<div>
-					<h1 className="font-bold text-3xl md:text-5xl text-left h-[7.5ex] leading-[2.5ex]">
-						Find a perfect Spotify playlist when <span ref={typeElementRef} />
-					</h1>
-					<p className="max-w-2xl mx-auto mt-4 text-[#989898] text-left md:text-center">
-						Most of the playlists have cool names which make them hard to find.
-						Tags allow you to discover them easily based on your current mood or
-						moment.
-					</p>
-					<div className="flex justify-start md:justify-center mt-6 md:mt-10">
-						<button
-							type="button"
-							className="bg-white px-6 py-2 text-[#151515] rounded-md hover:bg-gray-200 transition-colors flex items-center gap-x-2 font-bold"
-							onClick={() => {
-								playlistsSectionRef.current?.scrollIntoView({
-									behavior: 'smooth'
-								});
-							}}
-						>
-							<span>Discover now</span>
-							<MdOutlineArrowDownward className="text-lg" />
-						</button>
-					</div>
+		<main className="px-6 md:px-0">
+			<div className="mt-36 mb-20">
+				<h1 className="font-bold text-3xl md:text-5xl text-left h-[10ex] leading-[2.5ex]">
+					Find a perfect Spotify playlist when <span ref={typeElementRef} />
+				</h1>
+				<p className="max-w-2xl mx-auto mt-2 text-[#989898] text-left md:text-center">
+					Most of the playlists have cool names which make them hard to find.
+					Tags allow you to discover them easily based on your current mood or
+					moment.
+				</p>
+				<div className="flex justify-start md:justify-center mt-6 md:mt-10">
+					<button
+						type="button"
+						className="bg-white px-6 py-2 text-[#151515] rounded-md hover:bg-gray-200 transition-colors flex items-center gap-x-2 font-bold"
+						onClick={() => {
+							playlistsSectionRef.current?.scrollIntoView({
+								behavior: 'smooth'
+							});
+						}}
+					>
+						<span>Discover now</span>
+						<MdOutlineArrowDownward className="text-lg" />
+					</button>
 				</div>
 			</div>
 			<div
 				className="max-w-6xl mx-auto min-h-screen scroll-mt-24 mb-10"
 				ref={playlistsSectionRef}
 			>
-				<h1 className="font-bold text-3xl">All playlists</h1>
+				<h1 className="font-bold text-2xl md:text-3xl">All playlists</h1>
 				<div className="flex gap-x-6 mt-6 items-start">
-					<div className="sticky top-24 w-56 shrink-0">
+					<div className="sticky top-24 w-56 shrink-0 hidden md:block">
 						{selectedTags.length ? (
 							<div className="flex gap-2 flex-wrap">
 								{selectedTags.map(tag => (
