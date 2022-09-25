@@ -1,6 +1,7 @@
 import { Dialog, Popover } from '@headlessui/react';
 import clsx from 'clsx';
 import { signIn, signOut, useSession } from 'next-auth/react';
+import Image from 'next/future/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
@@ -11,6 +12,7 @@ import {
 	MdClose,
 	MdLogout,
 	MdMenu,
+	MdPerson,
 	MdQueueMusic
 } from 'react-icons/md';
 
@@ -144,14 +146,20 @@ const Nav = () => {
 			</nav>
 			<Dialog open={isOpen} onClose={() => setIsOpen(false)}>
 				<Dialog.Panel className="fixed top-28 left-0 bg-[#151515] w-full h-full px-6 z-10">
-					<button
-						onClick={async () => await signIn('spotify')}
-						className="bg-[#1ed760] flex items-center gap-x-2 w-full justify-center py-2 rounded-md hover:opacity-90 transition-opacity"
+					{!session.data ? (
+						<button
+							onClick={async () => await signIn('spotify')}
+							className="bg-[#1ed760] flex items-center gap-x-2 w-full justify-center py-2 rounded-md hover:opacity-90 transition-opacity"
+						>
+							<FaSpotify className="text-lg" />
+							<span className="font-bold">Sign in with Spotify</span>
+						</button>
+					) : null}
+					<div
+						className={clsx('flex flex-col divide-y divide-[#292929]', {
+							'mt-8': !session.data
+						})}
 					>
-						<FaSpotify className="text-lg" />
-						<span className="font-bold">Sign in with Spotify</span>
-					</button>
-					<div className="flex flex-col mt-8 divide-y">
 						<NavLink href="/" className="text-xl py-3">
 							Home
 						</NavLink>
@@ -159,6 +167,38 @@ const Nav = () => {
 							Submit your playlist
 						</NavLink>
 					</div>
+					{session.data ? (
+						<>
+							<div className="mt-10 flex items-center gap-x-2">
+								{session.data.user.image ? (
+									<Image
+										src={session.data.user.image}
+										alt={session.data.user.name ?? session.data.user.id}
+										width={32}
+										height={32}
+										className="rounded-full"
+									/>
+								) : (
+									<div className="bg-[#292929]">
+										<MdPerson />
+									</div>
+								)}
+								<p>{session.data.user.name}</p>
+							</div>
+							<div className="flex flex-col divide-y divide-[#292929] mt-2">
+								<NavLink href="/me/playlists" className="text-xl py-3">
+									My playlists
+								</NavLink>
+								<button
+									type="button"
+									onClick={async () => signOut()}
+									className="text-left text-xl py-3 text-[#989898] hover:text-white"
+								>
+									Sign out
+								</button>
+							</div>
+						</>
+					) : null}
 				</Dialog.Panel>
 			</Dialog>
 		</>
