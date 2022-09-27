@@ -17,6 +17,9 @@ export const PlaylistCard = (props: Props) => {
 						src={props.data.images[0].url}
 						alt="Playlist image"
 						fill
+						sizes="(max-width: 768px) 100vw,
+						(max-width: 1200px) 50vw,
+						33vw"
 						className="object-cover"
 					/>
 				) : null}

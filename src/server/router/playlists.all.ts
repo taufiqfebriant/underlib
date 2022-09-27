@@ -5,31 +5,24 @@ import { z } from 'zod';
 import { env } from '../../env/server.mjs';
 import { createRouter } from './context';
 
-const select = Prisma.validator<Prisma.PlaylistSelect>()({
-	id: true,
-	tags: {
-		select: {
-			name: true
-		}
-	}
-});
-
 export const playlistsAll = createRouter().query('playlists.all', {
 	input: z.object({
 		limit: z.number().min(1).max(8),
-		cursor: z.number().nullish(),
+		cursor: z.string().nullish(),
 		tags: z.array(z.string()).nullish()
 	}),
 	async resolve({ ctx, input }) {
-		const data: (Pick<
-			SimplifiedPlaylist,
-			'id' | 'name' | 'description' | 'images' | 'owner'
-		> &
-			Pick<Prisma.PlaylistGetPayload<{ select: typeof select }>, 'tags'>)[] =
-			[];
+		const select = Prisma.validator<Prisma.PlaylistSelect>()({
+			id: true,
+			tags: {
+				select: {
+					name: true
+				}
+			}
+		});
 
-		const playlists = await ctx.prisma.playlist.findMany({
-			take: input.limit,
+		let playlists = await ctx.prisma.playlist.findMany({
+			take: input.limit + 1,
 			select,
 			where: {
 				deletedAt: null,
@@ -40,11 +33,38 @@ export const playlistsAll = createRouter().query('playlists.all', {
 						}
 					}
 				}
-			}
+			},
+			orderBy: [
+				{
+					updatedAt: 'desc'
+				},
+				{
+					id: 'asc'
+				}
+			],
+			cursor: input.cursor
+				? {
+						id: input.cursor
+				  }
+				: undefined,
+			skip: input.cursor ? 1 : undefined
 		});
 
+		const data: (Pick<
+			SimplifiedPlaylist,
+			'id' | 'name' | 'description' | 'images' | 'owner'
+		> &
+			Pick<Prisma.PlaylistGetPayload<{ select: typeof select }>, 'tags'>)[] =
+			[];
+
 		if (!playlists.length) {
-			return { data };
+			return { data, cursor: null };
+		}
+
+		let cursor = null;
+		if (playlists.length > input.limit) {
+			playlists = playlists.slice(0, -1);
+			cursor = playlists[playlists.length - 1]?.id ?? null;
 		}
 
 		const encodedString = Buffer.from(
@@ -103,6 +123,6 @@ export const playlistsAll = createRouter().query('playlists.all', {
 			});
 		}
 
-		return { data };
+		return { data, cursor };
 	}
 });

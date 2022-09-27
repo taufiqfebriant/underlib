@@ -135,7 +135,11 @@ const Nav = () => {
 							</button>
 						)}
 					</div>
-					<button type="button" onClick={() => setIsOpen(prev => !prev)}>
+					<button
+						type="button"
+						onClick={() => setIsOpen(prev => !prev)}
+						className="md:hidden"
+					>
 						{isOpen ? (
 							<MdClose className="text-3xl" />
 						) : (
@@ -145,7 +149,7 @@ const Nav = () => {
 				</div>
 			</nav>
 			<Dialog open={isOpen} onClose={() => setIsOpen(false)}>
-				<Dialog.Panel className="fixed top-28 left-0 bg-[#151515] w-full h-full px-6 z-10">
+				<Dialog.Panel className="fixed top-0 left-0 bg-[#151515] w-full h-full px-6 z-10 pt-28">
 					{!session.data ? (
 						<button
 							onClick={async () => await signIn('spotify')}
@@ -191,7 +195,7 @@ const Nav = () => {
 								</NavLink>
 								<button
 									type="button"
-									onClick={async () => signOut()}
+									onClick={async () => await signOut()}
 									className="text-left text-xl py-3 text-[#989898] hover:text-white"
 								>
 									Sign out

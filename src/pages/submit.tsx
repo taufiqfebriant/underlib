@@ -238,8 +238,8 @@ const Submit: NextPage = () => {
 																			<button
 																				type="button"
 																				className="bg-[#3c3c3c] px-4 py-2 rounded-md hover:bg-[#686868] transition-colors"
-																				onClick={() =>
-																					getPlaylists.fetchNextPage()
+																				onClick={async () =>
+																					await getPlaylists.fetchNextPage()
 																				}
 																			>
 																				Load more
