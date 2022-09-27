@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import { NextPage } from 'next';
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { MdClose, MdFilterAlt, MdOutlineArrowDownward } from 'react-icons/md';
+import { useInView } from 'react-intersection-observer';
 import Typed from 'typed.js';
 import { PlaylistCard } from '../components/PlaylistCard';
 import Spinner from '../components/Spinner';
@@ -41,74 +42,75 @@ const TagOptions = ({ query, except }: { query: string; except: string[] }) => {
 	);
 };
 
-type PlaylistsProps = {
-	tags: string[];
-};
+// type PlaylistsProps = {
+// 	tags: string[];
+// };
 
-const Playlists = (props: PlaylistsProps) => {
-	const getPlaylists = trpc.useInfiniteQuery(
-		['playlists.all', { limit: 8, tags: props.tags }],
-		{
-			getNextPageParam: lastPage => lastPage.cursor ?? undefined
-		}
-	);
+// const Playlists = (props: PlaylistsProps) => {
+// 	const fetchMoreRef = useRef<HTMLDivElement>(null);
+// 	const onScreen = useOnScreen<HTMLDivElement>(fetchMoreRef);
 
-	const isLoading = getPlaylists.isLoading || getPlaylists.isFetchingNextPage;
+// 	useEffect(() => {
+// 		console.log('onScreen:', onScreen);
+// 	}, [onScreen]);
 
-	if (getPlaylists.isError) {
-		return (
-			<div className="text-center w-full">
-				<h1 className="text-2xl font-bold">Something went wrong</h1>
-				<p className="text-[#989898] mt-2 font-medium">
-					We&apos;re really sorry. Please try to refresh the page.
-				</p>
-			</div>
-		);
-	}
+// 	const getPlaylists = trpc.useInfiniteQuery(
+// 		['playlists.all', { limit: 8, tags: props.tags }],
+// 		{
+// 			getNextPageParam: lastPage => lastPage.cursor ?? undefined
+// 		}
+// 	);
 
-	if (!getPlaylists.data?.pages[0]?.data.length && !isLoading) {
-		return (
-			<div className="text-center w-full">
-				<h1 className="text-2xl font-bold">No playlists found</h1>
-				<p className="text-[#989898] mt-2 font-medium">
-					We couldn&apos;t find what you searched for. Try search again.
-				</p>
-			</div>
-		);
-	}
+// 	const isLoading = getPlaylists.isLoading || getPlaylists.isFetchingNextPage;
 
-	return (
-		<>
-			<div className="grid grid-cols-1 md:grid-cols-[repeat(4,_minmax(0,_210px))] w-full justify-between gap-y-4 md:gap-y-6 mt-4">
-				{getPlaylists.data?.pages.map((group, i) => (
-					<Fragment key={i}>
-						{group.data.map(playlist => (
-							<PlaylistCard key={playlist.id} data={playlist} />
-						))}
-					</Fragment>
-				))}
-			</div>
+// 	if (getPlaylists.isError) {
+// 		return (
+// 			<div className="text-center w-full">
+// 				<h1 className="text-2xl font-bold">Something went wrong</h1>
+// 				<p className="text-[#989898] mt-2 font-medium">
+// 					We&apos;re really sorry. Please try to refresh the page.
+// 				</p>
+// 			</div>
+// 		);
+// 	}
 
-			{getPlaylists.hasNextPage && !isLoading ? (
-				<div className="flex justify-center mt-4">
-					<button
-						type="button"
-						onClick={async () => await getPlaylists.fetchNextPage()}
-						className="bg-[#292929] px-4 py-2 rounded-md"
-					>
-						Load more
-					</button>
-				</div>
-			) : null}
+// 	if (!getPlaylists.data?.pages[0]?.data.length && !isLoading) {
+// 		return (
+// 			<div className="text-center w-full">
+// 				<h1 className="text-2xl font-bold">No playlists found</h1>
+// 				<p className="text-[#989898] mt-2 font-medium">
+// 					We couldn&apos;t find what you searched for. Try search again.
+// 				</p>
+// 			</div>
+// 		);
+// 	}
 
-			{isLoading ? (
-				<div className="flex justify-center w-full mt-4">
-					<Spinner className="text-[#292929] fill-white w-6 h-6 md:w-8 md:h-8" />
-				</div>
-			) : null}
-		</>
-	);
-};
+// 	return (
+// 		<>
+// 			<div className="grid grid-cols-1 md:grid-cols-[repeat(4,_minmax(0,_210px))] w-full justify-between gap-y-4 md:gap-y-6 mt-4">
+// 				{getPlaylists.data?.pages.map((group, i) => (
+// 					<Fragment key={i}>
+// 						{group.data.map(playlist => (
+// 							<PlaylistCard key={playlist.id} data={playlist} />
+// 						))}
+// 					</Fragment>
+// 				))}
+// 			</div>
+
+// 			{getPlaylists.hasNextPage && !isLoading ? (
+// 				<div className="mt-4 w-full" ref={fetchMoreRef}>
+// 					Testing
+// 				</div>
+// 			) : null}
+
+// 			{isLoading ? (
+// 				<div className="flex justify-center w-full mt-4">
+// 					<Spinner className="text-[#292929] fill-white w-6 h-6 md:w-8 md:h-8" />
+// 				</div>
+// 			) : null}
+// 		</>
+// 	);
+// };
 
 const Home: NextPage = () => {
 	const typeElementRef = useRef<HTMLSpanElement>(null);
@@ -172,6 +174,26 @@ const Home: NextPage = () => {
 		};
 	}, [handleScroll]);
 
+	const getPlaylists = trpc.useInfiniteQuery(
+		['playlists.all', { limit: 8, tags: selectedTags }],
+		{
+			getNextPageParam: lastPage => lastPage.cursor ?? undefined
+		}
+	);
+
+	const isLoading = getPlaylists.isLoading || getPlaylists.isFetchingNextPage;
+
+	const inView = useInView({ trackVisibility: true, delay: 100 });
+	useEffect(() => {
+		const fetchMore = async () => {
+			await getPlaylists.fetchNextPage();
+		};
+
+		if (inView.entry?.isIntersecting) {
+			fetchMore();
+		}
+	}, [inView.entry?.isIntersecting, getPlaylists]);
+
 	return (
 		<>
 			<main className="px-6 md:px-0">
@@ -219,7 +241,45 @@ const Home: NextPage = () => {
 						</button>
 					</div>
 
-					<Playlists tags={selectedTags} />
+					{/* <Playlists tags={selectedTags} /> */}
+
+					{getPlaylists.isError ? (
+						<div className="text-center w-full">
+							<h1 className="text-2xl font-bold">Something went wrong</h1>
+							<p className="text-[#989898] mt-2 font-medium">
+								We&apos;re really sorry. Please try to refresh the page.
+							</p>
+						</div>
+					) : null}
+
+					{!getPlaylists.data?.pages[0]?.data.length && !isLoading ? (
+						<div className="text-center w-full">
+							<h1 className="text-2xl font-bold">No playlists found</h1>
+							<p className="text-[#989898] mt-2 font-medium">
+								We couldn&apos;t find what you searched for. Try search again.
+							</p>
+						</div>
+					) : null}
+
+					<div className="grid grid-cols-1 md:grid-cols-[repeat(4,_minmax(0,_210px))] w-full justify-between gap-y-4 md:gap-y-6 mt-4">
+						{getPlaylists.data?.pages.map((group, i) => (
+							<Fragment key={i}>
+								{group.data.map(playlist => (
+									<PlaylistCard key={playlist.id} data={playlist} />
+								))}
+							</Fragment>
+						))}
+					</div>
+
+					{getPlaylists.hasNextPage && !isLoading ? (
+						<div className="mt-4" ref={inView.ref} />
+					) : null}
+
+					{isLoading ? (
+						<div className="flex justify-center w-full mt-4">
+							<Spinner className="text-[#292929] fill-white w-6 h-6 md:w-8 md:h-8" />
+						</div>
+					) : null}
 				</div>
 			</main>
 			{isPassingPlaylistsHeader ? (
