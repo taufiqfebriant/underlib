@@ -34,35 +34,30 @@ const useScrollPosition = () => {
 	return scrollPosition;
 };
 
-type NavLinkProps = {
-	href: string;
-	children: string;
-	className?: string;
-};
+// const NavLink = (props: NavLinkProps) => {
+// 	const router = useRouter();
+// 	const isActive = router.asPath === props.href;
 
-const NavLink = ({ href, children, className }: NavLinkProps) => {
-	const router = useRouter();
-	const isActive = router.asPath === href;
-
-	return (
-		<Link href={href} passHref>
-			<a
-				className={clsx(
-					`transition-colors hover:text-white ${className}`,
-					{ 'text-[#989898]': !isActive },
-					{ 'text-white': isActive }
-				)}
-			>
-				{children}
-			</a>
-		</Link>
-	);
-};
+// 	return (
+// 		<Link href={props.href} passHref>
+// 			<a
+// 				className={clsx(
+// 					`transition-colors hover:text-white ${className}`,
+// 					{ 'text-[#989898]': !isActive },
+// 					{ 'text-white': isActive }
+// 				)}
+// 			>
+// 				{children}
+// 			</a>
+// 		</Link>
+// 	);
+// };
 
 const Nav = () => {
 	const session = useSession();
 	const scrollPosition = useScrollPosition();
 	const [isOpen, setIsOpen] = useState(false);
+	const router = useRouter();
 
 	return (
 		<>
@@ -78,12 +73,28 @@ const Nav = () => {
 						diskaver
 					</div>
 					<div className="hidden md:flex items-center">
-						<NavLink href="/" className="font-medium mx-4 text-sm">
-							Home
-						</NavLink>
-						<NavLink href="/submit" className="font-medium mx-4 text-sm">
-							Submit your playlist
-						</NavLink>
+						<Link href="/" passHref>
+							<a
+								className={clsx(
+									`transition-colors hover:text-white font-medium mx-4 text-sm`,
+									{ 'text-[#989898]': router.asPath !== '/' },
+									{ 'text-white': router.asPath === '/' }
+								)}
+							>
+								Home
+							</a>
+						</Link>
+						<Link href="/submit" passHref>
+							<a
+								className={clsx(
+									`transition-colors hover:text-white font-medium mx-4 text-sm`,
+									{ 'text-[#989898]': router.asPath !== '/submit' },
+									{ 'text-white': router.asPath === '/submit' }
+								)}
+							>
+								Submit your playlist
+							</a>
+						</Link>
 						{session.data ? (
 							<Popover>
 								{({ open }) => (
@@ -164,12 +175,30 @@ const Nav = () => {
 							'mt-8': !session.data
 						})}
 					>
-						<NavLink href="/" className="text-xl py-3">
-							Home
-						</NavLink>
-						<NavLink href="/submit" className="text-xl py-3">
-							Submit your playlist
-						</NavLink>
+						<Link href="/" passHref>
+							<a
+								className={clsx(
+									`transition-colors hover:text-white text-xl py-3`,
+									{ 'text-[#989898]': router.asPath !== '/' },
+									{ 'text-white': router.asPath === '/' }
+								)}
+								onClick={() => setIsOpen(false)}
+							>
+								Home
+							</a>
+						</Link>
+						<Link href="/submit" passHref>
+							<a
+								className={clsx(
+									`transition-colors hover:text-white text-xl py-3`,
+									{ 'text-[#989898]': router.asPath !== '/submit' },
+									{ 'text-white': router.asPath === '/submit' }
+								)}
+								onClick={() => setIsOpen(false)}
+							>
+								Submit your playlist
+							</a>
+						</Link>
 					</div>
 					{session.data ? (
 						<>
