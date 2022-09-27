@@ -1,4 +1,5 @@
 import { Combobox, Dialog } from '@headlessui/react';
+import clsx from 'clsx';
 import { NextPage } from 'next';
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { MdClose, MdFilterAlt, MdOutlineArrowDownward } from 'react-icons/md';
@@ -15,6 +16,14 @@ const TagOptions = ({ query, except }: { query: string; except: string[] }) => {
 
 	if (getTags.error) {
 		return <div className={defaultClasses}>Something went wrong</div>;
+	}
+
+	if (!getTags.data?.data.length && !getTags.isLoading) {
+		return (
+			<li className="px-4 h-10 bg-[#292929] flex items-center">
+				There&apos;s no playlists with &quot;{query}&quot; tag
+			</li>
+		);
 	}
 
 	return (
@@ -108,6 +117,7 @@ const Home: NextPage = () => {
 	const [selectedTags, setSelectedTags] = useState<string[]>([]);
 	const debouncedQuery: string = useDebounce<string>(query, 1000);
 	const [isOpen, setIsOpen] = useState(false);
+	const tagsInputRef = useRef<HTMLInputElement>(null);
 
 	useEffect(() => {
 		if (!typeElementRef.current) return;
@@ -234,7 +244,15 @@ const Home: NextPage = () => {
 					</div>
 					<Combobox
 						value={selectedTags}
-						onChange={tags => setSelectedTags(tags)}
+						onChange={tags => {
+							setSelectedTags(tags);
+							setQuery('');
+
+							if (tagsInputRef.current) {
+								tagsInputRef.current.value = '';
+								tagsInputRef.current.focus();
+							}
+						}}
 						multiple
 						as="div"
 						className="w-full mt-4"
@@ -244,15 +262,21 @@ const Home: NextPage = () => {
 							onChange={e => setQuery(e.target.value)}
 							className="bg-[#292929] h-10 rounded-md px-4 w-full mt-2"
 							placeholder="Search tags"
+							ref={tagsInputRef}
 						/>
-						<Combobox.Options className="mt-2 rounded-md divide-y divide-gray-800 overflow-y-auto max-h-60">
-							{debouncedQuery ? (
+						<Combobox.Options
+							className={clsx(
+								'rounded-md divide-y divide-gray-800 overflow-y-auto max-h-60',
+								{ 'mt-2': query && debouncedQuery }
+							)}
+						>
+							{query && debouncedQuery ? (
 								<TagOptions query={debouncedQuery} except={selectedTags} />
 							) : null}
 						</Combobox.Options>
 					</Combobox>
 					{selectedTags.length ? (
-						<div className="flex gap-2 flex-wrap mt-4">
+						<div className="flex gap-2 flex-wrap mt-2">
 							{selectedTags.map(tag => (
 								<div
 									key={tag}
