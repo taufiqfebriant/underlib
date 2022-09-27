@@ -219,9 +219,18 @@ const Nav = () => {
 								<p>{session.data.user.name}</p>
 							</div>
 							<div className="flex flex-col divide-y divide-[#292929] mt-2">
-								<NavLink href="/me/playlists" className="text-xl py-3">
-									My playlists
-								</NavLink>
+								<Link href="/me/playlists" passHref>
+									<a
+										className={clsx(
+											`transition-colors hover:text-white text-xl py-3`,
+											{ 'text-[#989898]': router.asPath !== '/me/playlists' },
+											{ 'text-white': router.asPath === '/me/playlists' }
+										)}
+										onClick={() => setIsOpen(false)}
+									>
+										My playlists
+									</a>
+								</Link>
 								<button
 									type="button"
 									onClick={async () => await signOut()}
