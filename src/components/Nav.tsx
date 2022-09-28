@@ -121,10 +121,12 @@ const Nav = () => {
 						) : (
 							<button
 								onClick={async () => await signIn('spotify')}
-								className="bg-[#1ed760]"
+								className="bg-[#1ed760] flex items-center gap-x-2 py-2 px-4 rounded-md hover:opacity-90 transition-opacity ml-3"
 							>
-								<FaSpotify className="text-lg" />
-								<span>Sign in with Spotify</span>
+								<FaSpotify />
+								<span className="text-sm font-medium">
+									Sign in with Spotify
+								</span>
 							</button>
 						)}
 					</div>

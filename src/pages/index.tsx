@@ -91,7 +91,7 @@ const Playlists = (props: PlaylistsProps) => {
 
 	return (
 		<>
-			<div className="grid grid-cols-1 justify-between mt-4 gap-y-4 md:mt-8 md:gap-y-6 md:grid-cols-[repeat(5,_minmax(0,_210px))]">
+			<div className="grid grid-cols-1 justify-between mt-6 gap-y-4 sm:grid-cols-2 sm:gap-x-4 md:grid-cols-[repeat(4,_minmax(0,_200px))] md:gap-y-6 lg:grid-cols-[repeat(5,_minmax(0,_200px))]">
 				{getPlaylists.data?.pages.map((group, i) => (
 					<Fragment key={i}>
 						{group.data.map(playlist => (
@@ -153,7 +153,7 @@ const Home: NextPage = () => {
 
 	return (
 		<>
-			<Container className="px-6 md:px-0">
+			<Container>
 				<div className="mt-32 mb-20 md:mt-28">
 					<h1 className="font-bold text-6xl text-center h-full md:text-8xl flex flex-col gap-y-2">
 						<span className="text-white">Moods.</span>
@@ -194,14 +194,14 @@ const Home: NextPage = () => {
 						className="flex items-center justify-between bg-[#151515]"
 						ref={playlistsHeaderRef}
 					>
-						<h1 className="font-bold text-2xl md:text-3xl">All playlists</h1>
+						<h1 className="font-bold text-2xl sm:text-3xl">All playlists</h1>
 						<button
 							type="button"
-							className="bg-[#292929] px-3 py-2 rounded-md flex items-center gap-x-1"
+							className="bg-[#292929] px-4 py-2 rounded-md flex items-center gap-x-2 hover:bg-[#3c3c3c] transition-colors"
 							onClick={() => setIsOpen(true)}
 						>
-							<MdFilterAlt className="text-lg" />
-							<span className="text-sm">Filter</span>
+							<span className="text-sm font-medium">Filter</span>
+							<MdFilterAlt />
 						</button>
 					</div>
 

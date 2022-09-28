@@ -9,21 +9,22 @@ export const PlaylistCard = (props: Props) => {
 	return (
 		<div
 			key={props.data.id}
-			className="bg-[#292929] rounded-md overflow-hidden h-[6.25rem] md:w-[210px] md:h-[22rem] flex md:flex-col"
+			className="bg-[#292929] rounded-md overflow-hidden h-[6.25rem] md:max-w-[200px] md:h-80 flex md:flex-col"
 		>
-			<div className="w-24 h-full md:w-full md:h-[210px] relative shrink-0">
-				{props.data.images[0] ? (
+			{props.data.images[0] ? (
+				<div className="relative w-24 md:max-h-[200px] md:w-[unset] md:h-full">
 					<Image
 						src={props.data.images[0].url}
 						alt="Playlist image"
-						fill
-						sizes="(max-width: 768px) 100vw,
-						(max-width: 1200px) 50vw,
-						33vw"
-						className="object-cover"
+						className="w-full h-auto object-cover"
+						sizes="(min-width: 640px) 50vw,
+						(min-width: 768px) 25vw,
+						(min-width: 1024px) 20vw,
+						100vw"
+						fill={true}
 					/>
-				) : null}
-			</div>
+				</div>
+			) : null}
 			<div className="px-3 py-2 flex flex-col justify-between flex-1 overflow-hidden">
 				<h1 className="font-semibold text-sm md:text-base truncate">
 					{props.data.name}

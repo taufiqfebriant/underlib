@@ -8,7 +8,7 @@ export const Container = (props: ComponentProps<'main'>) => {
 	}
 
 	return (
-		<main className={clsx('max-w-6xl mx-auto px-6 md:px-0', ...restClassNames)}>
+		<main className={clsx('max-w-6xl mx-auto px-6 xl:px-0', ...restClassNames)}>
 			{props.children}
 		</main>
 	);
