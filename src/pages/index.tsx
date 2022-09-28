@@ -4,7 +4,7 @@ import { NextPage } from 'next';
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { MdClose, MdFilterAlt, MdOutlineArrowDownward } from 'react-icons/md';
 import { useInView } from 'react-intersection-observer';
-import Typed from 'typed.js';
+import { Container } from '../components/Container';
 import { PlaylistCard } from '../components/PlaylistCard';
 import Spinner from '../components/Spinner';
 import { useDebounce } from '../hooks/use-debounce';
@@ -121,30 +121,6 @@ const Home: NextPage = () => {
 	const [isOpen, setIsOpen] = useState(false);
 	const tagsInputRef = useRef<HTMLInputElement>(null);
 
-	useEffect(() => {
-		if (!typeElementRef.current) return;
-
-		const typed = new Typed(typeElementRef.current, {
-			strings: [
-				'you have a crush.',
-				"it's midnight.",
-				"you're on a deadline.",
-				"it's raining outside.",
-				"you're young and free.",
-				"you're chilling at the park.",
-				"you're growing up."
-			],
-			typeSpeed: 70,
-			backSpeed: 50,
-			backDelay: 2500,
-			loop: true
-		});
-
-		return () => {
-			typed.destroy();
-		};
-	}, []);
-
 	const [isPassingPlaylistsHeader, setIsPassingPlaylistsHeader] =
 		useState(false);
 
@@ -196,20 +172,24 @@ const Home: NextPage = () => {
 
 	return (
 		<>
-			<main className="px-6 md:px-0">
-				<div className="mt-36 mb-20">
-					<h1 className="font-bold text-3xl md:text-5xl text-left h-[10ex] leading-[2.5ex]">
-						Find a perfect Spotify playlist when <span ref={typeElementRef} />
+			<Container className="px-6 md:px-0">
+				<div className="mt-32 mb-20">
+					<h1 className="font-bold text-6xl text-center h-full md:text-8xl flex flex-col gap-y-2">
+						<span className="text-white">Moods.</span>
+						<span className="text-white">Moments.</span>
+						<span className="text-transparent bg-clip-text bg-gradient-to-r from-[#739a77] to-[#1ed760] pb-2">
+							Playlists.
+						</span>
 					</h1>
-					<p className="max-w-2xl mx-auto mt-2 text-[#989898] text-left md:text-center">
+					<p className="max-w-2xl mx-auto text-[#989898] mt-4 text-lg text-center">
 						Most of the playlists have cool names which make them hard to find.
 						Tags allow you to discover them easily based on your current mood or
 						moment.
 					</p>
-					<div className="flex justify-start md:justify-center mt-6 md:mt-10">
+					<div className="flex justify-center mt-8 md:mt-10">
 						<button
 							type="button"
-							className="bg-white px-4 py-2 text-[#151515] rounded-md hover:bg-gray-200 transition-colors flex items-center gap-x-1 font-bold"
+							className="bg-white px-4 py-2 text-[#151515] rounded-md hover:bg-gray-200 transition-colors flex items-center gap-x-2 font-medium"
 							onClick={() => {
 								playlistsSectionRef.current?.scrollIntoView({
 									behavior: 'smooth'
@@ -217,15 +197,20 @@ const Home: NextPage = () => {
 							}}
 						>
 							<span>Discover now</span>
-							<MdOutlineArrowDownward className="text-lg" />
+							<MdOutlineArrowDownward />
+						</button>
+					</div>
+					<div className="flex justify-center mt-4 md:mt-0">
+						<button
+							type="button"
+							className="bg-[#292929] px-4 py-2 rounded-md hover:bg-[#3c3c3c] transition-colors font-medium"
+						>
+							Submit your playlist
 						</button>
 					</div>
 				</div>
 
-				<div
-					className="max-w-6xl mx-auto scroll-mt-24 mb-10"
-					ref={playlistsSectionRef}
-				>
+				<div className="scroll-mt-24 mb-10" ref={playlistsSectionRef}>
 					<div
 						className="flex items-center justify-between bg-[#151515]"
 						ref={playlistsHeaderRef}
@@ -281,7 +266,7 @@ const Home: NextPage = () => {
 						</div>
 					) : null}
 				</div>
-			</main>
+			</Container>
 			{isPassingPlaylistsHeader ? (
 				<div className="fixed top-0 left-0 w-full bg-[#151515] pt-20 px-6 shadow-sm shadow-[#3c3c3c] pb-2 md:hidden">
 					<button

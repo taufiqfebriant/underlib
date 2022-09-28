@@ -15,6 +15,7 @@ import {
 	MdPerson,
 	MdQueueMusic
 } from 'react-icons/md';
+import { Container } from './Container';
 
 const useScrollPosition = () => {
 	const [scrollPosition, setScrollPosition] = useState(0);
@@ -34,25 +35,6 @@ const useScrollPosition = () => {
 	return scrollPosition;
 };
 
-// const NavLink = (props: NavLinkProps) => {
-// 	const router = useRouter();
-// 	const isActive = router.asPath === props.href;
-
-// 	return (
-// 		<Link href={props.href} passHref>
-// 			<a
-// 				className={clsx(
-// 					`transition-colors hover:text-white ${className}`,
-// 					{ 'text-[#989898]': !isActive },
-// 					{ 'text-white': isActive }
-// 				)}
-// 			>
-// 				{children}
-// 			</a>
-// 		</Link>
-// 	);
-// };
-
 const Nav = () => {
 	const session = useSession();
 	const scrollPosition = useScrollPosition();
@@ -68,7 +50,7 @@ const Nav = () => {
 					{ 'shadow-none': !scrollPosition && !isOpen }
 				)}
 			>
-				<div className="flex items-center justify-between relative max-w-6xl mx-auto px-6 md:px-0">
+				<Container className="flex items-center justify-between relative">
 					<div className="bg-white text-[#151515] font-bold px-4 py-2">
 						diskaver
 					</div>
@@ -157,7 +139,7 @@ const Nav = () => {
 							<MdMenu className="text-3xl" />
 						)}
 					</button>
-				</div>
+				</Container>
 			</nav>
 			<Dialog open={isOpen} onClose={() => setIsOpen(false)}>
 				<Dialog.Panel className="fixed top-0 left-0 bg-[#151515] w-full h-full px-6 z-10 pt-28">

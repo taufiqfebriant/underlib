@@ -127,285 +127,279 @@ const Submit: NextPage = () => {
 		return <p>Something went wrong</p>;
 	}
 
+	if (!getPlaylists.data?.pages[0]?.data.length) {
+		return (
+			<main className="max-w-6xl mt-36 px-6">
+				<h1 className="text-white text-3xl font-bold mt-14 text-center">
+					Oh no!
+				</h1>
+				<p className="mt-2 text-[#989898] text-center">
+					You don&apos;t have a playlist to submit.
+				</p>
+				<div className="mt-4">
+					<p>What should i do?</p>
+					<ul className="list-disc list-inside">
+						<li>
+							Make sure your playlist is set to public and added to your
+							profile. Tutorial:{' '}
+							<a
+								href="https://allthings.how/how-to-add-playlists-to-your-spotify-profile"
+								rel="noreferrer"
+								target="_blank"
+								className="text-cyan-600 hover:underline flex items-center gap-x-2"
+							>
+								<span>
+									How to Add Playlists to Your Spotify Profile - All Things How
+								</span>
+								<FaExternalLinkAlt />
+							</a>
+						</li>
+					</ul>
+				</div>
+			</main>
+		);
+	}
+
 	return (
 		<main className="max-w-2xl mx-auto min-h-screen flex items-center">
 			<div className="w-full">
-				{getPlaylists.data?.pages[0]?.data.length ? (
-					<>
-						<h1 className="text-white text-4xl font-bold text-center">
-							Submit your playlist
-						</h1>
-						<p className="mt-4 text-[#989898] font-medium text-center">
-							Pick one of your public playlists and give it some tags to help
-							others find it
-						</p>
-						<div className="mt-10">
-							<form onSubmit={form.handleSubmit(onSubmit)} className="mt-4">
-								<Controller
-									control={form.control}
-									name="id"
-									defaultValue=""
-									render={({ field, formState }) => (
-										<>
-											<Listbox
-												value={field.value}
-												onChange={id => {
-													field.onChange(id);
+				<h1 className="text-white text-4xl font-bold text-center">
+					Submit your playlist
+				</h1>
+				<p className="mt-4 text-[#989898] font-medium text-center">
+					Pick one of your public playlists and give it some tags to help others
+					find it
+				</p>
+				<div className="mt-10">
+					<form onSubmit={form.handleSubmit(onSubmit)} className="mt-4">
+						<Controller
+							control={form.control}
+							name="id"
+							defaultValue=""
+							render={({ field, formState }) => (
+								<>
+									<Listbox
+										value={field.value}
+										onChange={id => {
+											field.onChange(id);
 
-													const relatedPlaylist = getPlaylists.data.pages
-														.flatMap(page => page.data)
-														.find(playlist => playlist.id === id);
+											const relatedPlaylist = getPlaylists.data.pages
+												.flatMap(page => page.data)
+												.find(playlist => playlist.id === id);
 
-													if (relatedPlaylist) {
-														setSelectedPlaylist(relatedPlaylist);
-													}
-												}}
-												as="div"
-												className="relative"
-											>
-												{({ open }) => (
-													<>
-														<Listbox.Label className="text-lg">
-															Playlist
-														</Listbox.Label>
-														<p className="text-[#989898] text-sm">
-															Pick a playlist
-														</p>
-														<Listbox.Button className="w-full mt-2 bg-[#292929] px-4 h-10 rounded-md flex items-center justify-between">
-															<span>{selectedPlaylist?.name}</span>
-															{open ? <FaChevronUp /> : <FaChevronDown />}
-														</Listbox.Button>
-														<Listbox.Options className="mt-1 rounded-md divide-y divide-[#3c3c3c] overflow-y-auto max-h-60 absolute w-full z-10 border border-[#3c3c3c]">
-															{getPlaylists.data?.pages.map((group, i) => (
-																<Fragment key={i}>
-																	{group.data.map(playlist => (
-																		<Listbox.Option
-																			key={playlist.id}
-																			value={playlist.id}
-																			as={Fragment}
-																		>
-																			{({ active, selected }) => (
-																				<li
-																					className={clsx(
-																						`px-4 hover:bg-[#3c3c3c] cursor-pointer flex items-center gap-x-4 h-20 transition-colors`,
-																						{
-																							'bg-[#3c3c3c]': selected || active
-																						},
-																						{
-																							'bg-[#292929]':
-																								!selected && !active
-																						}
-																					)}
-																				>
-																					{playlist.images.length &&
-																					playlist.images[0]?.url ? (
-																						<Image
-																							src={playlist.images[0].url}
-																							alt="Playlist image"
-																							width={48}
-																							height={48}
-																							className="object-cover rounded-md"
-																						/>
-																					) : null}
-																					<div>
-																						<h1 className="block">
-																							{playlist.name}
-																						</h1>
-																						{playlist.description ? (
-																							<p
-																								className="text-sm text-[#989898] truncate"
-																								dangerouslySetInnerHTML={{
-																									__html: playlist.description
-																								}}
-																							/>
-																						) : null}
-																					</div>
-																				</li>
-																			)}
-																		</Listbox.Option>
-																	))}
-																</Fragment>
-															))}
-															{getPlaylists.hasNextPage ? (
-																<li className="bg-[#292929] flex items-center h-20 justify-center">
-																	{getPlaylists.isFetchingNextPage ? (
-																		<Spinner className="text-[#3c3c3c] fill-white w-5 h-5" />
-																	) : null}
-
-																	{getPlaylists.hasNextPage &&
-																	!getPlaylists.isFetchingNextPage ? (
-																		<>
-																			<button
-																				type="button"
-																				className="bg-[#3c3c3c] px-4 py-2 rounded-md hover:bg-[#686868] transition-colors"
-																				onClick={async () =>
-																					await getPlaylists.fetchNextPage()
-																				}
-																			>
-																				Load more
-																			</button>
-																		</>
-																	) : null}
-																</li>
-															) : null}
-														</Listbox.Options>
-													</>
-												)}
-											</Listbox>
-											{formState.errors.id?.message ? (
-												<p className="text-red-600 mt-2">
-													{form.formState.errors.id?.message}
-												</p>
-											) : null}
-										</>
-									)}
-								/>
-								<div className="mt-6">
-									<Controller
-										control={form.control}
-										name="tags"
-										defaultValue={[]}
-										render={({ field, formState }) => (
+											if (relatedPlaylist) {
+												setSelectedPlaylist(relatedPlaylist);
+											}
+										}}
+										as="div"
+										className="relative"
+									>
+										{({ open }) => (
 											<>
-												<Combobox
-													value={field.value}
-													onChange={tag => {
-														field.onChange(tag);
-														setQuery('');
-
-														if (tagsInputRef.current) {
-															tagsInputRef.current.value = '';
-															tagsInputRef.current.focus();
-														}
-													}}
-													multiple
-													as="div"
-													className="relative"
-												>
-													<Combobox.Label className="text-lg">
-														Tags
-													</Combobox.Label>
-
-													<p className="text-[#989898] text-sm">
-														Add some tags that relate to the playlist
-													</p>
-
-													{field.value.length ? (
-														<div className="flex gap-2 mt-2 flex-wrap">
-															{field.value.map(tag => (
-																<div
-																	key={tag}
-																	className="bg-[#292929] pl-3 pr-1 py-1 rounded-md flex items-center gap-x-2"
+												<Listbox.Label className="text-lg">
+													Playlist
+												</Listbox.Label>
+												<p className="text-[#989898] text-sm">
+													Pick a playlist
+												</p>
+												<Listbox.Button className="w-full mt-2 bg-[#292929] px-4 h-10 rounded-md flex items-center justify-between">
+													<span>{selectedPlaylist?.name}</span>
+													{open ? <FaChevronUp /> : <FaChevronDown />}
+												</Listbox.Button>
+												<Listbox.Options className="mt-1 rounded-md divide-y divide-[#3c3c3c] overflow-y-auto max-h-60 absolute w-full z-10 border border-[#3c3c3c]">
+													{getPlaylists.data?.pages.map((group, i) => (
+														<Fragment key={i}>
+															{group.data.map(playlist => (
+																<Listbox.Option
+																	key={playlist.id}
+																	value={playlist.id}
+																	as={Fragment}
 																>
-																	<span className="text-sm">{tag}</span>
+																	{({ active, selected }) => (
+																		<li
+																			className={clsx(
+																				`px-4 hover:bg-[#3c3c3c] cursor-pointer flex items-center gap-x-4 h-20 transition-colors`,
+																				{
+																					'bg-[#3c3c3c]': selected || active
+																				},
+																				{
+																					'bg-[#292929]': !selected && !active
+																				}
+																			)}
+																		>
+																			{playlist.images.length &&
+																			playlist.images[0]?.url ? (
+																				<Image
+																					src={playlist.images[0].url}
+																					alt="Playlist image"
+																					width={48}
+																					height={48}
+																					className="object-cover rounded-md"
+																				/>
+																			) : null}
+																			<div>
+																				<h1 className="block">
+																					{playlist.name}
+																				</h1>
+																				{playlist.description ? (
+																					<p
+																						className="text-sm text-[#989898] truncate"
+																						dangerouslySetInnerHTML={{
+																							__html: playlist.description
+																						}}
+																					/>
+																				) : null}
+																			</div>
+																		</li>
+																	)}
+																</Listbox.Option>
+															))}
+														</Fragment>
+													))}
+													{getPlaylists.hasNextPage ? (
+														<li className="bg-[#292929] flex items-center h-20 justify-center">
+															{getPlaylists.isFetchingNextPage ? (
+																<Spinner className="text-[#3c3c3c] fill-white w-5 h-5" />
+															) : null}
+
+															{getPlaylists.hasNextPage &&
+															!getPlaylists.isFetchingNextPage ? (
+																<>
 																	<button
 																		type="button"
-																		className="bg-[#3c3c3c] hover:bg-[#686868] transition-colors rounded-md p-1"
-																		onClick={() => {
-																			const currentTags =
-																				form.getValues('tags');
-																			form.setValue(
-																				'tags',
-																				currentTags.filter(
-																					currentTag => currentTag !== tag
-																				)
-																			);
-																		}}
+																		className="bg-[#3c3c3c] px-4 py-2 rounded-md hover:bg-[#686868] transition-colors"
+																		onClick={async () =>
+																			await getPlaylists.fetchNextPage()
+																		}
 																	>
-																		<MdClose />
+																		Load more
 																	</button>
-																</div>
-															))}
-														</div>
+																</>
+															) : null}
+														</li>
 													) : null}
+												</Listbox.Options>
+											</>
+										)}
+									</Listbox>
+									{formState.errors.id?.message ? (
+										<p className="text-red-600 mt-2">
+											{form.formState.errors.id?.message}
+										</p>
+									) : null}
+								</>
+							)}
+						/>
+						<div className="mt-6">
+							<Controller
+								control={form.control}
+								name="tags"
+								defaultValue={[]}
+								render={({ field, formState }) => (
+									<>
+										<Combobox
+											value={field.value}
+											onChange={tag => {
+												field.onChange(tag);
+												setQuery('');
 
-													<Combobox.Input
-														onChange={e => setQuery(e.target.value)}
-														className="w-full bg-[#292929] px-4 h-10 rounded-md flex items-center justify-between focus:outline-none mt-2"
-														ref={tagsInputRef}
-														placeholder="Chill, Happy, Young, etc."
+												if (tagsInputRef.current) {
+													tagsInputRef.current.value = '';
+													tagsInputRef.current.focus();
+												}
+											}}
+											multiple
+											as="div"
+											className="relative"
+										>
+											<Combobox.Label className="text-lg">Tags</Combobox.Label>
+
+											<p className="text-[#989898] text-sm">
+												Add some tags that relate to the playlist
+											</p>
+
+											{field.value.length ? (
+												<div className="flex gap-2 mt-2 flex-wrap">
+													{field.value.map(tag => (
+														<div
+															key={tag}
+															className="bg-[#292929] pl-3 pr-1 py-1 rounded-md flex items-center gap-x-2"
+														>
+															<span className="text-sm">{tag}</span>
+															<button
+																type="button"
+																className="bg-[#3c3c3c] hover:bg-[#686868] transition-colors rounded-md p-1"
+																onClick={() => {
+																	const currentTags = form.getValues('tags');
+																	form.setValue(
+																		'tags',
+																		currentTags.filter(
+																			currentTag => currentTag !== tag
+																		)
+																	);
+																}}
+															>
+																<MdClose />
+															</button>
+														</div>
+													))}
+												</div>
+											) : null}
+
+											<Combobox.Input
+												onChange={e => setQuery(e.target.value)}
+												className="w-full bg-[#292929] px-4 h-10 rounded-md flex items-center justify-between focus:outline-none mt-2"
+												ref={tagsInputRef}
+												placeholder="Chill, Happy, Young, etc."
+											/>
+
+											<Combobox.Options
+												className={clsx(
+													'mt-1 rounded-md divide-y divide-gray-800 overflow-y-auto max-h-60 absolute w-full',
+													{
+														'border border-[#3c3c3c]': query && debouncedQuery
+													},
+													{ 'border-0': !query || !debouncedQuery }
+												)}
+											>
+												{query && debouncedQuery ? (
+													<TagOptions
+														query={debouncedQuery}
+														except={form.getValues('tags')}
 													/>
-
-													<Combobox.Options
-														className={clsx(
-															'mt-1 rounded-md divide-y divide-gray-800 overflow-y-auto max-h-60 absolute w-full',
-															{
-																'border border-[#3c3c3c]':
-																	query && debouncedQuery
-															},
-															{ 'border-0': !query || !debouncedQuery }
-														)}
-													>
-														{query && debouncedQuery ? (
-															<TagOptions
-																query={debouncedQuery}
-																except={form.getValues('tags')}
-															/>
-														) : null}
-													</Combobox.Options>
-												</Combobox>
-												{formState.errors.tags?.message ? (
-													<p className="text-red-600 mt-2">
-														{form.formState.errors.tags?.message}
-													</p>
 												) : null}
-											</>
-										)}
-									/>
-								</div>
-								<div className="flex justify-end mt-6">
-									<button
-										type="submit"
-										disabled={createPlaylistLoading}
-										className={clsx(
-											'bg-white px-6 py-2 text-[#151515] rounded-md hover:bg-gray-200 transition-colors font-bold disabled:opacity-50',
-											{ 'flex gap-x-2 items-center': true }
-										)}
-									>
-										{createPlaylistLoading ? (
-											<>
-												<Spinner className="text-[#989898] fill-[#151515] w-5 h-5" />
-												<span>Submitting...</span>
-											</>
-										) : (
-											<span>Submit</span>
-										)}
-									</button>
-								</div>
-							</form>
+											</Combobox.Options>
+										</Combobox>
+										{formState.errors.tags?.message ? (
+											<p className="text-red-600 mt-2">
+												{form.formState.errors.tags?.message}
+											</p>
+										) : null}
+									</>
+								)}
+							/>
 						</div>
-					</>
-				) : (
-					<>
-						<h1 className="text-white text-4xl font-bold mt-14 text-center">
-							Oh crap!
-						</h1>
-						<p className="mt-4 text-gray-400 font-medium text-center">
-							You don&apos;t have a playlist to submit yet
-						</p>
-						<div className="mt-10">
-							<p>What should i do?</p>
-							<ul className="list-disc list-inside">
-								<li>
-									Make sure your playlist is set to public and added to your
-									profile. Tutorial:{' '}
-									<a
-										href="https://allthings.how/how-to-add-playlists-to-your-spotify-profile"
-										rel="noreferrer"
-										target="_blank"
-										className="text-cyan-600 hover:underline flex items-center gap-x-2"
-									>
-										<span>
-											How to Add Playlists to Your Spotify Profile - All Things
-											How
-										</span>
-										<FaExternalLinkAlt />
-									</a>
-								</li>
-							</ul>
+						<div className="flex justify-end mt-6">
+							<button
+								type="submit"
+								disabled={createPlaylistLoading}
+								className={clsx(
+									'bg-white px-6 py-2 text-[#151515] rounded-md hover:bg-gray-200 transition-colors font-bold disabled:opacity-50',
+									{ 'flex gap-x-2 items-center': true }
+								)}
+							>
+								{createPlaylistLoading ? (
+									<>
+										<Spinner className="text-[#989898] fill-[#151515] w-5 h-5" />
+										<span>Submitting...</span>
+									</>
+								) : (
+									<span>Submit</span>
+								)}
+							</button>
 						</div>
-					</>
-				)}
+					</form>
+				</div>
 			</div>
 
 			{/* TODO: Tambah transisi */}
