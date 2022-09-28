@@ -153,7 +153,7 @@ const Home: NextPage = () => {
 
 	return (
 		<>
-			<Container>
+			<Container as="main">
 				<div className="mt-32 mb-20 md:mt-28">
 					<h1 className="font-bold text-6xl text-center h-full md:text-8xl flex flex-col gap-y-2">
 						<span className="text-white">Moods.</span>
@@ -209,15 +209,17 @@ const Home: NextPage = () => {
 				</div>
 			</Container>
 			{isPassingPlaylistsHeader ? (
-				<div className="fixed top-0 left-0 w-full bg-[#151515] pt-20 px-6 shadow-sm shadow-[#3c3c3c] pb-2 md:hidden">
-					<button
-						type="button"
-						className="bg-[#292929] px-3 py-2 rounded-md flex items-center gap-x-1 w-full justify-center"
-						onClick={() => setIsOpen(true)}
-					>
-						<MdFilterAlt className="text-lg" />
-						<span className="text-sm">Filter</span>
-					</button>
+				<div className="fixed top-0 left-0 w-full bg-[#151515] pt-20 px-6 shadow-sm shadow-[#3c3c3c] pb-2">
+					<Container>
+						<button
+							type="button"
+							className="bg-[#292929] px-3 py-2 rounded-md flex items-center gap-x-1 w-full justify-center"
+							onClick={() => setIsOpen(true)}
+						>
+							<MdFilterAlt className="text-lg" />
+							<span className="text-sm">Filter</span>
+						</button>
+					</Container>
 				</div>
 			) : null}
 			<Dialog open={isOpen} onClose={() => setIsOpen(false)}>

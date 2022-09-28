@@ -1,15 +1,27 @@
 import clsx from 'clsx';
-import { ComponentProps } from 'react';
+import { HTMLAttributes } from 'react';
 
-export const Container = (props: ComponentProps<'main'>) => {
+type Props = {
+	as?: keyof JSX.IntrinsicElements;
+} & HTMLAttributes<HTMLOrSVGElement>;
+
+export const Container = ({
+	as: Wrapper = 'div',
+	className,
+	children,
+	...rest
+}: Props) => {
 	const restClassNames = [];
-	if (props.className) {
-		restClassNames.push({ [props.className]: props.className });
+	if (className) {
+		restClassNames.push({ [className]: className });
 	}
 
 	return (
-		<main className={clsx('max-w-6xl mx-auto px-6 xl:px-0', ...restClassNames)}>
-			{props.children}
-		</main>
+		<Wrapper
+			className={clsx('max-w-6xl mx-auto px-6 xl:px-0', ...restClassNames)}
+			{...rest}
+		>
+			{children}
+		</Wrapper>
 	);
 };
