@@ -7,7 +7,7 @@ import { createRouter } from './context';
 
 export const playlistsAll = createRouter().query('playlists.all', {
 	input: z.object({
-		limit: z.number().min(1).max(8),
+		limit: z.number().min(1).max(10),
 		cursor: z.string().nullish(),
 		tags: z.array(z.string()).nullish()
 	}),

@@ -42,78 +42,79 @@ const TagOptions = ({ query, except }: { query: string; except: string[] }) => {
 	);
 };
 
-// type PlaylistsProps = {
-// 	tags: string[];
-// };
+type PlaylistsProps = {
+	tags: string[];
+};
 
-// const Playlists = (props: PlaylistsProps) => {
-// 	const fetchMoreRef = useRef<HTMLDivElement>(null);
-// 	const onScreen = useOnScreen<HTMLDivElement>(fetchMoreRef);
+const Playlists = (props: PlaylistsProps) => {
+	const getPlaylists = trpc.useInfiniteQuery(
+		['playlists.all', { limit: 10, tags: props.tags }],
+		{
+			getNextPageParam: lastPage => lastPage.cursor ?? undefined
+		}
+	);
 
-// 	useEffect(() => {
-// 		console.log('onScreen:', onScreen);
-// 	}, [onScreen]);
+	const isLoading = getPlaylists.isLoading || getPlaylists.isFetchingNextPage;
 
-// 	const getPlaylists = trpc.useInfiniteQuery(
-// 		['playlists.all', { limit: 8, tags: props.tags }],
-// 		{
-// 			getNextPageParam: lastPage => lastPage.cursor ?? undefined
-// 		}
-// 	);
+	const inView = useInView({ trackVisibility: true, delay: 100 });
+	useEffect(() => {
+		const fetchMore = async () => {
+			await getPlaylists.fetchNextPage();
+		};
 
-// 	const isLoading = getPlaylists.isLoading || getPlaylists.isFetchingNextPage;
+		if (inView.entry?.isIntersecting) {
+			fetchMore();
+		}
+	}, [inView.entry?.isIntersecting, getPlaylists]);
 
-// 	if (getPlaylists.isError) {
-// 		return (
-// 			<div className="text-center w-full">
-// 				<h1 className="text-2xl font-bold">Something went wrong</h1>
-// 				<p className="text-[#989898] mt-2 font-medium">
-// 					We&apos;re really sorry. Please try to refresh the page.
-// 				</p>
-// 			</div>
-// 		);
-// 	}
+	if (getPlaylists.isError) {
+		return (
+			<div className="text-center w-full">
+				<h1 className="text-2xl font-bold">Something went wrong</h1>
+				<p className="text-[#989898] mt-2 font-medium">
+					We&apos;re really sorry. Please try to refresh the page.
+				</p>
+			</div>
+		);
+	}
 
-// 	if (!getPlaylists.data?.pages[0]?.data.length && !isLoading) {
-// 		return (
-// 			<div className="text-center w-full">
-// 				<h1 className="text-2xl font-bold">No playlists found</h1>
-// 				<p className="text-[#989898] mt-2 font-medium">
-// 					We couldn&apos;t find what you searched for. Try search again.
-// 				</p>
-// 			</div>
-// 		);
-// 	}
+	if (!getPlaylists.data?.pages[0]?.data.length && !isLoading) {
+		return (
+			<div className="text-center w-full">
+				<h1 className="text-2xl font-bold">No playlists found</h1>
+				<p className="text-[#989898] mt-2 font-medium">
+					We couldn&apos;t find what you searched for. Try search again.
+				</p>
+			</div>
+		);
+	}
 
-// 	return (
-// 		<>
-// 			<div className="grid grid-cols-1 md:grid-cols-[repeat(4,_minmax(0,_210px))] w-full justify-between gap-y-4 md:gap-y-6 mt-4">
-// 				{getPlaylists.data?.pages.map((group, i) => (
-// 					<Fragment key={i}>
-// 						{group.data.map(playlist => (
-// 							<PlaylistCard key={playlist.id} data={playlist} />
-// 						))}
-// 					</Fragment>
-// 				))}
-// 			</div>
+	return (
+		<>
+			<div className="grid grid-cols-1 justify-between mt-4 gap-y-4 md:mt-8 md:gap-y-6 md:grid-cols-[repeat(5,_minmax(0,_210px))]">
+				{getPlaylists.data?.pages.map((group, i) => (
+					<Fragment key={i}>
+						{group.data.map(playlist => (
+							<PlaylistCard key={playlist.id} data={playlist} />
+						))}
+					</Fragment>
+				))}
+			</div>
 
-// 			{getPlaylists.hasNextPage && !isLoading ? (
-// 				<div className="mt-4 w-full" ref={fetchMoreRef}>
-// 					Testing
-// 				</div>
-// 			) : null}
+			{getPlaylists.hasNextPage && !isLoading ? (
+				<div className="mt-4 w-full" ref={inView.ref} />
+			) : null}
 
-// 			{isLoading ? (
-// 				<div className="flex justify-center w-full mt-4">
-// 					<Spinner className="text-[#292929] fill-white w-6 h-6 md:w-8 md:h-8" />
-// 				</div>
-// 			) : null}
-// 		</>
-// 	);
-// };
+			{isLoading ? (
+				<div className="flex justify-center w-full mt-4">
+					<Spinner className="text-[#292929] fill-white w-6 h-6 md:w-8 md:h-8" />
+				</div>
+			) : null}
+		</>
+	);
+};
 
 const Home: NextPage = () => {
-	const typeElementRef = useRef<HTMLSpanElement>(null);
 	const playlistsSectionRef = useRef<HTMLDivElement>(null);
 	const [query, setQuery] = useState('');
 	const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -150,30 +151,10 @@ const Home: NextPage = () => {
 		};
 	}, [handleScroll]);
 
-	const getPlaylists = trpc.useInfiniteQuery(
-		['playlists.all', { limit: 8, tags: selectedTags }],
-		{
-			getNextPageParam: lastPage => lastPage.cursor ?? undefined
-		}
-	);
-
-	const isLoading = getPlaylists.isLoading || getPlaylists.isFetchingNextPage;
-
-	const inView = useInView({ trackVisibility: true, delay: 100 });
-	useEffect(() => {
-		const fetchMore = async () => {
-			await getPlaylists.fetchNextPage();
-		};
-
-		if (inView.entry?.isIntersecting) {
-			fetchMore();
-		}
-	}, [inView.entry?.isIntersecting, getPlaylists]);
-
 	return (
 		<>
 			<Container className="px-6 md:px-0">
-				<div className="mt-32 mb-20">
+				<div className="mt-32 mb-20 md:mt-28">
 					<h1 className="font-bold text-6xl text-center h-full md:text-8xl flex flex-col gap-y-2">
 						<span className="text-white">Moods.</span>
 						<span className="text-white">Moments.</span>
@@ -186,10 +167,10 @@ const Home: NextPage = () => {
 						Tags allow you to discover them easily based on your current mood or
 						moment.
 					</p>
-					<div className="flex justify-center mt-8 md:mt-10">
+					<div className="flex flex-col items-center gap-y-4 mt-8 md:flex-row md:gap-x-4 md:justify-center">
 						<button
 							type="button"
-							className="bg-white px-4 py-2 text-[#151515] rounded-md hover:bg-gray-200 transition-colors flex items-center gap-x-2 font-medium"
+							className="bg-white px-4 py-2 text-[#151515] rounded-md hover:bg-gray-200 transition-colors flex items-center gap-x-2 font-medium justify-center"
 							onClick={() => {
 								playlistsSectionRef.current?.scrollIntoView({
 									behavior: 'smooth'
@@ -199,8 +180,6 @@ const Home: NextPage = () => {
 							<span>Discover now</span>
 							<MdOutlineArrowDownward />
 						</button>
-					</div>
-					<div className="flex justify-center mt-4 md:mt-0">
 						<button
 							type="button"
 							className="bg-[#292929] px-4 py-2 rounded-md hover:bg-[#3c3c3c] transition-colors font-medium"
@@ -226,45 +205,7 @@ const Home: NextPage = () => {
 						</button>
 					</div>
 
-					{/* <Playlists tags={selectedTags} /> */}
-
-					{getPlaylists.isError ? (
-						<div className="text-center w-full">
-							<h1 className="text-2xl font-bold">Something went wrong</h1>
-							<p className="text-[#989898] mt-2 font-medium">
-								We&apos;re really sorry. Please try to refresh the page.
-							</p>
-						</div>
-					) : null}
-
-					{!getPlaylists.data?.pages[0]?.data.length && !isLoading ? (
-						<div className="text-center w-full">
-							<h1 className="text-2xl font-bold">No playlists found</h1>
-							<p className="text-[#989898] mt-2 font-medium">
-								We couldn&apos;t find what you searched for. Try search again.
-							</p>
-						</div>
-					) : null}
-
-					<div className="grid grid-cols-1 md:grid-cols-[repeat(4,_minmax(0,_210px))] w-full justify-between gap-y-4 md:gap-y-6 mt-4">
-						{getPlaylists.data?.pages.map((group, i) => (
-							<Fragment key={i}>
-								{group.data.map(playlist => (
-									<PlaylistCard key={playlist.id} data={playlist} />
-								))}
-							</Fragment>
-						))}
-					</div>
-
-					{getPlaylists.hasNextPage && !isLoading ? (
-						<div className="mt-4" ref={inView.ref} />
-					) : null}
-
-					{isLoading ? (
-						<div className="flex justify-center w-full mt-4">
-							<Spinner className="text-[#292929] fill-white w-6 h-6 md:w-8 md:h-8" />
-						</div>
-					) : null}
+					<Playlists tags={selectedTags} />
 				</div>
 			</Container>
 			{isPassingPlaylistsHeader ? (
