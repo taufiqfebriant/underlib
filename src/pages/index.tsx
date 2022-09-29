@@ -1,6 +1,8 @@
 import { Combobox, Dialog } from '@headlessui/react';
 import clsx from 'clsx';
 import { NextPage } from 'next';
+import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { MdClose, MdFilterAlt, MdOutlineArrowDownward } from 'react-icons/md';
 import { useInView } from 'react-intersection-observer';
@@ -9,6 +11,7 @@ import { PlaylistCard } from '../components/PlaylistCard';
 import Spinner from '../components/Spinner';
 import { useDebounce } from '../hooks/use-debounce';
 import { trpc } from '../utils/trpc';
+import { useSignInDialogStore } from './_app';
 
 const TagOptions = ({ query, except }: { query: string; except: string[] }) => {
 	const getTags = trpc.useQuery(['tags.all', { q: query, except }]);
@@ -121,11 +124,13 @@ const Home: NextPage = () => {
 	const debouncedQuery: string = useDebounce<string>(query, 1000);
 	const [isOpen, setIsOpen] = useState(false);
 	const tagsInputRef = useRef<HTMLInputElement>(null);
+	const session = useSession();
+	const signInDialogStore = useSignInDialogStore();
 
 	const [isPassingPlaylistsHeader, setIsPassingPlaylistsHeader] =
 		useState(false);
-
 	const playlistsHeaderRef = useRef<HTMLDivElement>(null);
+
 	const handleScroll = useCallback(() => {
 		if (!playlistsHeaderRef.current) return;
 
@@ -162,10 +167,10 @@ const Home: NextPage = () => {
 							Playlists.
 						</span>
 					</h1>
-					<p className="max-w-2xl mx-auto text-[#989898] mt-4 text-lg text-center">
-						Most of the playlists have cool names which make them hard to find.
-						Tags allow you to discover them easily based on your current mood or
-						moment.
+					<p className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto text-[#989898] mt-4 text-lg text-center">
+						Most of the Spotify playlists have cool names which make them hard
+						to find. Tags allow you to discover them easily based on your
+						current mood or moment.
 					</p>
 					<div className="flex flex-col items-center gap-y-4 mt-8 md:flex-row md:gap-x-4 md:justify-center">
 						<button
@@ -180,12 +185,21 @@ const Home: NextPage = () => {
 							<span>Discover now</span>
 							<MdOutlineArrowDownward />
 						</button>
-						<button
-							type="button"
-							className="bg-[#292929] px-4 py-2 rounded-md hover:bg-[#3c3c3c] transition-colors font-medium"
-						>
-							Submit your playlist
-						</button>
+						{session.data ? (
+							<Link href="/submit" passHref>
+								<a className="bg-[#292929] px-4 py-2 rounded-md hover:bg-[#3c3c3c] transition-colors font-medium">
+									Submit your playlist
+								</a>
+							</Link>
+						) : (
+							<button
+								type="button"
+								className="bg-[#292929] px-4 py-2 rounded-md hover:bg-[#3c3c3c] transition-colors font-medium"
+								onClick={() => signInDialogStore.setIsOpen(true)}
+							>
+								Submit your playlist
+							</button>
+						)}
 					</div>
 				</div>
 
@@ -213,78 +227,86 @@ const Home: NextPage = () => {
 					<Container>
 						<button
 							type="button"
-							className="bg-[#292929] px-3 py-2 rounded-md flex items-center gap-x-1 w-full justify-center"
+							className="bg-[#292929] rounded-md flex items-center gap-x-2 py-2 w-full justify-center"
 							onClick={() => setIsOpen(true)}
 						>
-							<MdFilterAlt className="text-lg" />
-							<span className="text-sm">Filter</span>
+							<span className="text-sm font-medium">Filter</span>
+							<MdFilterAlt />
 						</button>
 					</Container>
 				</div>
 			) : null}
-			<Dialog open={isOpen} onClose={() => setIsOpen(false)}>
-				<Dialog.Panel className="fixed inset-0 bg-[#151515] z-30 px-6">
-					<div className="flex justify-between items-center pt-4">
-						<Dialog.Title className="font-bold text-2xl">Filter</Dialog.Title>
-						<button type="button" onClick={() => setIsOpen(false)}>
-							<MdClose className="text-3xl" />
-						</button>
-					</div>
-					<Combobox
-						value={selectedTags}
-						onChange={tags => {
-							setSelectedTags(tags);
-							setQuery('');
+			<Dialog
+				open={isOpen}
+				onClose={() => setIsOpen(false)}
+				className="relative z-30"
+			>
+				<div className="fixed inset-0 bg-black/70" aria-hidden="true" />
 
-							if (tagsInputRef.current) {
-								tagsInputRef.current.value = '';
-								tagsInputRef.current.focus();
-							}
-						}}
-						multiple
-						as="div"
-						className="w-full mt-4"
-					>
-						<Combobox.Label>Tags</Combobox.Label>
-						<Combobox.Input
-							onChange={e => setQuery(e.target.value)}
-							className="bg-[#292929] h-10 rounded-md px-4 w-full mt-2"
-							placeholder="Search tags"
-							ref={tagsInputRef}
-						/>
-						<Combobox.Options
-							className={clsx(
-								'rounded-md divide-y divide-gray-800 overflow-y-auto max-h-60',
-								{ 'mt-2': query && debouncedQuery }
-							)}
-						>
-							{query && debouncedQuery ? (
-								<TagOptions query={debouncedQuery} except={selectedTags} />
-							) : null}
-						</Combobox.Options>
-					</Combobox>
-					{selectedTags.length ? (
-						<div className="flex gap-2 flex-wrap mt-2">
-							{selectedTags.map(tag => (
-								<div
-									key={tag}
-									className="bg-[#292929] pl-3 pr-1 py-1 rounded-md flex items-center gap-x-2"
-								>
-									<span className="text-sm">{tag}</span>
-									<button
-										type="button"
-										className="bg-[#3c3c3c] hover:bg-[#686868] transition-colors rounded-md p-1"
-										onClick={() =>
-											setSelectedTags(prev => prev.filter(t => t !== tag))
-										}
-									>
-										<MdClose className="text-sm" />
-									</button>
-								</div>
-							))}
+				<div className="fixed inset-0 flex items-center justify-center">
+					<Dialog.Panel className="bg-[#151515] p-4 h-2/3 w-4/5 rounded-md border border-[#3c3c3c] md:w-1/2 md:h-1/2">
+						<div className="flex justify-between items-center">
+							<Dialog.Title className="font-bold text-2xl">Filter</Dialog.Title>
+							<button type="button" onClick={() => setIsOpen(false)}>
+								<MdClose className="text-3xl" />
+							</button>
 						</div>
-					) : null}
-				</Dialog.Panel>
+						<Combobox
+							value={selectedTags}
+							onChange={tags => {
+								setSelectedTags(tags);
+								setQuery('');
+
+								if (tagsInputRef.current) {
+									tagsInputRef.current.value = '';
+									tagsInputRef.current.focus();
+								}
+							}}
+							multiple
+							as="div"
+							className="w-full mt-4"
+						>
+							<Combobox.Label>Tags</Combobox.Label>
+							<Combobox.Input
+								onChange={e => setQuery(e.target.value)}
+								className="bg-[#292929] h-10 rounded-md px-4 w-full mt-2"
+								placeholder="Search tags"
+								ref={tagsInputRef}
+							/>
+							<Combobox.Options
+								className={clsx(
+									'rounded-md divide-y divide-gray-800 overflow-y-auto max-h-60',
+									{ 'mt-2': query && debouncedQuery }
+								)}
+							>
+								{query && debouncedQuery ? (
+									<TagOptions query={debouncedQuery} except={selectedTags} />
+								) : null}
+							</Combobox.Options>
+						</Combobox>
+						{selectedTags.length ? (
+							<div className="flex gap-2 flex-wrap mt-2">
+								{selectedTags.map(tag => (
+									<div
+										key={tag}
+										className="bg-[#292929] pl-3 pr-1 py-1 rounded-md flex items-center gap-x-2"
+									>
+										<span className="text-sm">{tag}</span>
+										<button
+											type="button"
+											className="bg-[#3c3c3c] hover:bg-[#686868] transition-colors rounded-md p-1"
+											onClick={() =>
+												setSelectedTags(prev => prev.filter(t => t !== tag))
+											}
+										>
+											<MdClose className="text-sm" />
+										</button>
+									</div>
+								))}
+							</div>
+						) : null}
+					</Dialog.Panel>
+				</div>
 			</Dialog>
 		</>
 	);

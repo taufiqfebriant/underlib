@@ -15,6 +15,7 @@ import {
 	MdPerson,
 	MdQueueMusic
 } from 'react-icons/md';
+import { useSignInDialogStore } from '../pages/_app';
 import { Container } from './Container';
 
 const useScrollPosition = () => {
@@ -40,6 +41,7 @@ const Nav = () => {
 	const scrollPosition = useScrollPosition();
 	const [isOpen, setIsOpen] = useState(false);
 	const router = useRouter();
+	const signInDialogStore = useSignInDialogStore();
 
 	return (
 		<>
@@ -150,8 +152,8 @@ const Nav = () => {
 							onClick={async () => await signIn('spotify')}
 							className="bg-[#1ed760] flex items-center gap-x-2 w-full justify-center py-2 rounded-md hover:opacity-90 transition-opacity"
 						>
-							<FaSpotify className="text-lg" />
-							<span className="font-bold">Sign in with Spotify</span>
+							<FaSpotify />
+							<span className="font-medium">Sign in with Spotify</span>
 						</button>
 					) : null}
 					<div
@@ -171,18 +173,27 @@ const Nav = () => {
 								Home
 							</a>
 						</Link>
-						<Link href="/submit" passHref>
-							<a
-								className={clsx(
-									`transition-colors hover:text-white text-xl py-3`,
-									{ 'text-[#989898]': router.asPath !== '/submit' },
-									{ 'text-white': router.asPath === '/submit' }
-								)}
-								onClick={() => setIsOpen(false)}
+						{session.data ? (
+							<Link href="/submit" passHref>
+								<a
+									className={clsx(
+										`transition-colors hover:text-white text-xl py-3`,
+										{ 'text-[#989898]': router.asPath !== '/submit' },
+										{ 'text-white': router.asPath === '/submit' }
+									)}
+									onClick={() => setIsOpen(false)}
+								>
+									Submit your playlist
+								</a>
+							</Link>
+						) : (
+							<button
+								className="transition-colors text-[#989898] hover:text-white text-xl py-3 text-left"
+								onClick={() => signInDialogStore.setIsOpen(true)}
 							>
 								Submit your playlist
-							</a>
-						</Link>
+							</button>
+						)}
 					</div>
 					{session.data ? (
 						<>
