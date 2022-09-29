@@ -2,17 +2,18 @@ import { Combobox, Listbox } from '@headlessui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as Toast from '@radix-ui/react-toast';
 import clsx from 'clsx';
-import type { NextPage } from 'next';
 import Image from 'next/image';
-import { Fragment, useRef, useState } from 'react';
+import { Fragment, ReactElement, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { FaChevronDown, FaChevronUp, FaExternalLinkAlt } from 'react-icons/fa';
 import { MdClose } from 'react-icons/md';
 import { z } from 'zod';
+import { Layout } from '../components/Layout';
 import Spinner from '../components/Spinner';
 import { useDebounce } from '../hooks/use-debounce';
 import { ResponseData } from '../server/router/me.playlists';
 import { trpc } from '../utils/trpc';
+import { NextPageWithLayout } from './_app';
 
 type TagOptionsProps = {
 	query: string;
@@ -45,7 +46,7 @@ const TagOptions = (props: TagOptionsProps) => {
 		return (
 			<Combobox.Option
 				value={props.query}
-				className={`${defaultClasses} hover:bg-[#3c3c3c] transition-colors`}
+				className={`${defaultClasses} transition-colors hover:bg-[#3c3c3c]`}
 			>
 				Create &quot;{props.query}&quot;
 			</Combobox.Option>
@@ -58,7 +59,7 @@ const TagOptions = (props: TagOptionsProps) => {
 				<Combobox.Option
 					key={tag}
 					value={tag}
-					className={`${defaultClasses} hover:bg-[#3c3c3c] transition-colors`}
+					className={`${defaultClasses} transition-colors hover:bg-[#3c3c3c]`}
 				>
 					{tag}
 				</Combobox.Option>
@@ -82,7 +83,7 @@ const createPlaylistInput = z.object({
 
 type Schema = z.infer<typeof createPlaylistInput>;
 
-const Submit: NextPage = () => {
+const Submit: NextPageWithLayout = () => {
 	const getPlaylists = trpc.useInfiniteQuery(['me.playlists', { limit: 5 }], {
 		getNextPageParam: lastPage => lastPage.cursor ?? undefined
 	});
@@ -117,8 +118,8 @@ const Submit: NextPage = () => {
 
 	if (getPlaylists.isLoading) {
 		return (
-			<main className="min-h-screen flex items-center justify-center">
-				<Spinner className="text-[#292929] fill-white w-8 h-8" />
+			<main className="flex min-h-screen items-center justify-center">
+				<Spinner className="h-8 w-8 fill-white text-[#292929]" />
 			</main>
 		);
 	}
@@ -129,16 +130,16 @@ const Submit: NextPage = () => {
 
 	if (!getPlaylists.data?.pages[0]?.data.length) {
 		return (
-			<main className="max-w-6xl mt-36 px-6">
-				<h1 className="text-white text-3xl font-bold mt-14 text-center">
+			<main className="mt-36 max-w-6xl px-6">
+				<h1 className="mt-14 text-center text-3xl font-bold text-white">
 					Oh no!
 				</h1>
-				<p className="mt-2 text-[#989898] text-center">
+				<p className="mt-2 text-center text-[#989898]">
 					You don&apos;t have a playlist to submit.
 				</p>
 				<div className="mt-4">
 					<p>What should i do?</p>
-					<ul className="list-disc list-inside">
+					<ul className="list-inside list-disc">
 						<li>
 							Make sure your playlist is set to public and added to your
 							profile. Tutorial:{' '}
@@ -146,7 +147,7 @@ const Submit: NextPage = () => {
 								href="https://allthings.how/how-to-add-playlists-to-your-spotify-profile"
 								rel="noreferrer"
 								target="_blank"
-								className="text-cyan-600 hover:underline flex items-center gap-x-2"
+								className="flex items-center gap-x-2 text-cyan-600 hover:underline"
 							>
 								<span>
 									How to Add Playlists to Your Spotify Profile - All Things How
@@ -161,12 +162,12 @@ const Submit: NextPage = () => {
 	}
 
 	return (
-		<main className="max-w-2xl mx-auto min-h-screen flex items-center">
+		<main className="mx-auto flex min-h-screen max-w-2xl items-center">
 			<div className="w-full">
-				<h1 className="text-white text-4xl font-bold text-center">
+				<h1 className="text-center text-4xl font-bold text-white">
 					Submit your playlist
 				</h1>
-				<p className="mt-4 text-[#989898] font-medium text-center">
+				<p className="mt-4 text-center font-medium text-[#989898]">
 					Pick one of your public playlists and give it some tags to help others
 					find it
 				</p>
@@ -199,14 +200,14 @@ const Submit: NextPage = () => {
 												<Listbox.Label className="text-lg">
 													Playlist
 												</Listbox.Label>
-												<p className="text-[#989898] text-sm">
+												<p className="text-sm text-[#989898]">
 													Pick a playlist
 												</p>
-												<Listbox.Button className="w-full mt-2 bg-[#292929] px-4 h-10 rounded-md flex items-center justify-between">
+												<Listbox.Button className="mt-2 flex h-10 w-full items-center justify-between rounded-md bg-[#292929] px-4">
 													<span>{selectedPlaylist?.name}</span>
 													{open ? <FaChevronUp /> : <FaChevronDown />}
 												</Listbox.Button>
-												<Listbox.Options className="mt-1 rounded-md divide-y divide-[#3c3c3c] overflow-y-auto max-h-60 absolute w-full z-10 border border-[#3c3c3c]">
+												<Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full divide-y divide-[#3c3c3c] overflow-y-auto rounded-md border border-[#3c3c3c]">
 													{getPlaylists.data?.pages.map((group, i) => (
 														<Fragment key={i}>
 															{group.data.map(playlist => (
@@ -218,7 +219,7 @@ const Submit: NextPage = () => {
 																	{({ active, selected }) => (
 																		<li
 																			className={clsx(
-																				`px-4 hover:bg-[#3c3c3c] cursor-pointer flex items-center gap-x-4 h-20 transition-colors`,
+																				`flex h-20 cursor-pointer items-center gap-x-4 px-4 transition-colors hover:bg-[#3c3c3c]`,
 																				{
 																					'bg-[#3c3c3c]': selected || active
 																				},
@@ -234,7 +235,7 @@ const Submit: NextPage = () => {
 																					alt="Playlist image"
 																					width={48}
 																					height={48}
-																					className="object-cover rounded-md"
+																					className="rounded-md object-cover"
 																				/>
 																			) : null}
 																			<div>
@@ -243,7 +244,7 @@ const Submit: NextPage = () => {
 																				</h1>
 																				{playlist.description ? (
 																					<p
-																						className="text-sm text-[#989898] truncate"
+																						className="truncate text-sm text-[#989898]"
 																						dangerouslySetInnerHTML={{
 																							__html: playlist.description
 																						}}
@@ -257,9 +258,9 @@ const Submit: NextPage = () => {
 														</Fragment>
 													))}
 													{getPlaylists.hasNextPage ? (
-														<li className="bg-[#292929] flex items-center h-20 justify-center">
+														<li className="flex h-20 items-center justify-center bg-[#292929]">
 															{getPlaylists.isFetchingNextPage ? (
-																<Spinner className="text-[#3c3c3c] fill-white w-5 h-5" />
+																<Spinner className="h-5 w-5 fill-white text-[#3c3c3c]" />
 															) : null}
 
 															{getPlaylists.hasNextPage &&
@@ -267,7 +268,7 @@ const Submit: NextPage = () => {
 																<>
 																	<button
 																		type="button"
-																		className="bg-[#3c3c3c] px-4 py-2 rounded-md hover:bg-[#686868] transition-colors"
+																		className="rounded-md bg-[#3c3c3c] px-4 py-2 transition-colors hover:bg-[#686868]"
 																		onClick={async () =>
 																			await getPlaylists.fetchNextPage()
 																		}
@@ -283,7 +284,7 @@ const Submit: NextPage = () => {
 										)}
 									</Listbox>
 									{formState.errors.id?.message ? (
-										<p className="text-red-600 mt-2">
+										<p className="mt-2 text-red-600">
 											{form.formState.errors.id?.message}
 										</p>
 									) : null}
@@ -314,21 +315,21 @@ const Submit: NextPage = () => {
 										>
 											<Combobox.Label className="text-lg">Tags</Combobox.Label>
 
-											<p className="text-[#989898] text-sm">
+											<p className="text-sm text-[#989898]">
 												Add some tags that relate to the playlist
 											</p>
 
 											{field.value.length ? (
-												<div className="flex gap-2 mt-2 flex-wrap">
+												<div className="mt-2 flex flex-wrap gap-2">
 													{field.value.map(tag => (
 														<div
 															key={tag}
-															className="bg-[#292929] pl-3 pr-1 py-1 rounded-md flex items-center gap-x-2"
+															className="flex items-center gap-x-2 rounded-md bg-[#292929] py-1 pl-3 pr-1"
 														>
 															<span className="text-sm">{tag}</span>
 															<button
 																type="button"
-																className="bg-[#3c3c3c] hover:bg-[#686868] transition-colors rounded-md p-1"
+																className="rounded-md bg-[#3c3c3c] p-1 transition-colors hover:bg-[#686868]"
 																onClick={() => {
 																	const currentTags = form.getValues('tags');
 																	form.setValue(
@@ -348,14 +349,14 @@ const Submit: NextPage = () => {
 
 											<Combobox.Input
 												onChange={e => setQuery(e.target.value)}
-												className="w-full bg-[#292929] px-4 h-10 rounded-md flex items-center justify-between focus:outline-none mt-2"
+												className="mt-2 flex h-10 w-full items-center justify-between rounded-md bg-[#292929] px-4 focus:outline-none"
 												ref={tagsInputRef}
 												placeholder="Chill, Happy, Young, etc."
 											/>
 
 											<Combobox.Options
 												className={clsx(
-													'mt-1 rounded-md divide-y divide-gray-800 overflow-y-auto max-h-60 absolute w-full',
+													'absolute mt-1 max-h-60 w-full divide-y divide-gray-800 overflow-y-auto rounded-md',
 													{
 														'border border-[#3c3c3c]': query && debouncedQuery
 													},
@@ -371,7 +372,7 @@ const Submit: NextPage = () => {
 											</Combobox.Options>
 										</Combobox>
 										{formState.errors.tags?.message ? (
-											<p className="text-red-600 mt-2">
+											<p className="mt-2 text-red-600">
 												{form.formState.errors.tags?.message}
 											</p>
 										) : null}
@@ -379,18 +380,18 @@ const Submit: NextPage = () => {
 								)}
 							/>
 						</div>
-						<div className="flex justify-end mt-6">
+						<div className="mt-6 flex justify-end">
 							<button
 								type="submit"
 								disabled={createPlaylistLoading}
 								className={clsx(
-									'bg-white px-6 py-2 text-[#151515] rounded-md hover:bg-gray-200 transition-colors font-bold disabled:opacity-50',
-									{ 'flex gap-x-2 items-center': true }
+									'rounded-md bg-white px-6 py-2 font-bold text-[#151515] transition-colors hover:bg-gray-200 disabled:opacity-50',
+									{ 'flex items-center gap-x-2': true }
 								)}
 							>
 								{createPlaylistLoading ? (
 									<>
-										<Spinner className="text-[#989898] fill-[#151515] w-5 h-5" />
+										<Spinner className="h-5 w-5 fill-[#151515] text-[#989898]" />
 										<span>Submitting...</span>
 									</>
 								) : (
@@ -405,15 +406,15 @@ const Submit: NextPage = () => {
 			{/* TODO: Tambah transisi */}
 			{!createPlaylistLoading && createPlaylist.isSuccess ? (
 				<Toast.Provider duration={4000}>
-					<Toast.Root className="px-4 py-3 rounded-md bg-white text-[#151515]">
+					<Toast.Root className="rounded-md bg-white px-4 py-3 text-[#151515]">
 						<Toast.Title className="font-medium">Awesome!</Toast.Title>
 						<Toast.Close
 							aria-label="Close"
-							className="absolute top-2 right-2 rounded-md border border-gray-500 hover:bg-gray-200 p-[0.1rem]"
+							className="absolute top-2 right-2 rounded-md border border-gray-500 p-[0.1rem] hover:bg-gray-200"
 						>
 							<MdClose aria-hidden />
 						</Toast.Close>
-						<Toast.Description className="text-gray-600 text-sm">
+						<Toast.Description className="text-sm text-gray-600">
 							Your playlist was successfully submitted.
 						</Toast.Description>
 					</Toast.Root>
@@ -423,6 +424,10 @@ const Submit: NextPage = () => {
 			) : null}
 		</main>
 	);
+};
+
+Submit.getLayout = function getLayout(page: ReactElement) {
+	return <Layout>{page}</Layout>;
 };
 
 export default Submit;

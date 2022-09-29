@@ -47,20 +47,20 @@ const Nav = () => {
 		<>
 			<nav
 				className={clsx(
-					'py-4 justify-between fixed w-full bg-[#151515] transition-shadow top-0 left-0 z-20',
+					'fixed top-0 left-0 z-20 w-full justify-between bg-[#151515] py-4 transition-shadow',
 					{ 'shadow-sm shadow-[#3c3c3c]': scrollPosition || isOpen },
 					{ 'shadow-none': !scrollPosition && !isOpen }
 				)}
 			>
-				<Container className="flex items-center justify-between relative">
-					<div className="bg-white text-[#151515] font-bold px-4 py-2">
+				<Container className="relative flex items-center justify-between">
+					<div className="bg-white px-4 py-2 font-bold text-[#151515]">
 						diskaver
 					</div>
-					<div className="hidden md:flex items-center">
-						<Link href="/" passHref>
+					<div className="hidden items-center md:flex">
+						<Link href="/" passHref scroll={false}>
 							<a
 								className={clsx(
-									`transition-colors hover:text-white font-medium mx-4 text-sm`,
+									`mx-4 text-sm font-medium transition-colors hover:text-white`,
 									{ 'text-[#989898]': router.asPath !== '/' },
 									{ 'text-white': router.asPath === '/' }
 								)}
@@ -71,7 +71,7 @@ const Nav = () => {
 						<Link href="/submit" passHref>
 							<a
 								className={clsx(
-									`transition-colors hover:text-white font-medium mx-4 text-sm`,
+									`mx-4 text-sm font-medium transition-colors hover:text-white`,
 									{ 'text-[#989898]': router.asPath !== '/submit' },
 									{ 'text-white': router.asPath === '/submit' }
 								)}
@@ -85,7 +85,7 @@ const Nav = () => {
 									<>
 										<Popover.Button
 											className={clsx(
-												'font-medium ml-2 px-4 py-2 rounded-md transition-all flex items-center gap-x-2 text-sm hover:bg-[#3c3c3c]',
+												'ml-2 flex items-center gap-x-2 rounded-md px-4 py-2 text-sm font-medium transition-all hover:bg-[#3c3c3c]',
 												{ 'bg-[#292929]': !open },
 												{ 'bg-[#3c3c3c]': open }
 											)}
@@ -98,10 +98,10 @@ const Nav = () => {
 											)}
 										</Popover.Button>
 
-										<Popover.Panel className="absolute mt-2 rounded-md overflow-hidden w-48 bg-[#292929]">
+										<Popover.Panel className="absolute mt-2 w-48 overflow-hidden rounded-md bg-[#292929]">
 											<div className="flex flex-col divide-y divide-[#3c3c3c]">
 												<Popover.Button as={Link} href="/me/playlists" passHref>
-													<a className="flex items-center py-3 px-4 gap-x-2 transition-all hover:bg-[#3c3c3c]">
+													<a className="flex items-center gap-x-2 py-3 px-4 transition-all hover:bg-[#3c3c3c]">
 														<MdQueueMusic />
 														<span className="text-sm font-medium">
 															My Playlists
@@ -110,7 +110,7 @@ const Nav = () => {
 												</Popover.Button>
 												<Popover.Button
 													onClick={async () => signOut()}
-													className="flex items-center py-3 px-4 gap-x-2 transition-all hover:bg-[#3c3c3c]"
+													className="flex items-center gap-x-2 py-3 px-4 transition-all hover:bg-[#3c3c3c]"
 												>
 													<MdLogout />
 													<span className="text-sm font-medium">Sign out</span>
@@ -123,7 +123,7 @@ const Nav = () => {
 						) : (
 							<button
 								onClick={async () => await signIn('spotify')}
-								className="bg-[#1ed760] flex items-center gap-x-2 py-2 px-4 rounded-md hover:opacity-90 transition-opacity ml-3"
+								className="ml-3 flex items-center gap-x-2 rounded-md bg-[#1ed760] py-2 px-4 transition-opacity hover:opacity-90"
 							>
 								<FaSpotify />
 								<span className="text-sm font-medium">
@@ -146,11 +146,11 @@ const Nav = () => {
 				</Container>
 			</nav>
 			<Dialog open={isOpen} onClose={() => setIsOpen(false)}>
-				<Dialog.Panel className="fixed top-0 left-0 bg-[#151515] w-full h-full px-6 z-10 pt-28">
+				<Dialog.Panel className="fixed top-0 left-0 z-10 h-full w-full bg-[#151515] px-6 pt-28">
 					{!session.data ? (
 						<button
 							onClick={async () => await signIn('spotify')}
-							className="bg-[#1ed760] flex items-center gap-x-2 w-full justify-center py-2 rounded-md hover:opacity-90 transition-opacity"
+							className="flex w-full items-center justify-center gap-x-2 rounded-md bg-[#1ed760] py-2 transition-opacity hover:opacity-90"
 						>
 							<FaSpotify />
 							<span className="font-medium">Sign in with Spotify</span>
@@ -164,7 +164,7 @@ const Nav = () => {
 						<Link href="/" passHref>
 							<a
 								className={clsx(
-									`transition-colors hover:text-white text-xl py-3`,
+									`py-3 text-xl transition-colors hover:text-white`,
 									{ 'text-[#989898]': router.asPath !== '/' },
 									{ 'text-white': router.asPath === '/' }
 								)}
@@ -177,7 +177,7 @@ const Nav = () => {
 							<Link href="/submit" passHref>
 								<a
 									className={clsx(
-										`transition-colors hover:text-white text-xl py-3`,
+										`py-3 text-xl transition-colors hover:text-white`,
 										{ 'text-[#989898]': router.asPath !== '/submit' },
 										{ 'text-white': router.asPath === '/submit' }
 									)}
@@ -188,7 +188,7 @@ const Nav = () => {
 							</Link>
 						) : (
 							<button
-								className="transition-colors text-[#989898] hover:text-white text-xl py-3 text-left"
+								className="py-3 text-left text-xl text-[#989898] transition-colors hover:text-white"
 								onClick={() => signInDialogStore.setIsOpen(true)}
 							>
 								Submit your playlist
@@ -213,11 +213,11 @@ const Nav = () => {
 								)}
 								<p>{session.data.user.name}</p>
 							</div>
-							<div className="flex flex-col divide-y divide-[#292929] mt-2">
+							<div className="mt-2 flex flex-col divide-y divide-[#292929]">
 								<Link href="/me/playlists" passHref>
 									<a
 										className={clsx(
-											`transition-colors hover:text-white text-xl py-3`,
+											`py-3 text-xl transition-colors hover:text-white`,
 											{ 'text-[#989898]': router.asPath !== '/me/playlists' },
 											{ 'text-white': router.asPath === '/me/playlists' }
 										)}
@@ -229,7 +229,7 @@ const Nav = () => {
 								<button
 									type="button"
 									onClick={async () => await signOut()}
-									className="text-left text-xl py-3 text-[#989898] hover:text-white"
+									className="py-3 text-left text-xl text-[#989898] hover:text-white"
 								>
 									Sign out
 								</button>

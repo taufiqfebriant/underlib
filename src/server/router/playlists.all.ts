@@ -1,8 +1,8 @@
 import { Prisma } from '@prisma/client';
 import axios, { AxiosResponse } from 'axios';
-import { AccessToken, SimplifiedPlaylist } from 'spotify-types';
+import { SimplifiedPlaylist } from 'spotify-types';
 import { z } from 'zod';
-import { env } from '../../env/server.mjs';
+import { getAccessToken } from '../utils/spotify';
 import { createRouter } from './context';
 
 export const playlistsAll = createRouter().query('playlists.all', {
@@ -67,27 +67,7 @@ export const playlistsAll = createRouter().query('playlists.all', {
 			cursor = playlists[playlists.length - 1]?.id ?? null;
 		}
 
-		const encodedString = Buffer.from(
-			`${env.SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`
-		).toString('base64');
-
-		const getAccessTokenParams = new URLSearchParams({
-			grant_type: 'refresh_token',
-			refresh_token: env.SPOTIFY_REFRESH_TOKEN
-		}).toString();
-
-		const getAccessToken = await axios.post<AccessToken>(
-			'https://accounts.spotify.com/api/token',
-			getAccessTokenParams,
-			{
-				headers: {
-					Authorization: `Basic ${encodedString}`,
-					'Content-Type': 'application/x-www-form-urlencoded'
-				}
-			}
-		);
-
-		const accessToken = getAccessToken.data.access_token;
+		const accessToken = await getAccessToken();
 
 		const spotifyPlaylistPromises = playlists.map(async playlist => {
 			const spotifyResponse: AxiosResponse<
