@@ -59,7 +59,11 @@ const Playlists = (props: PlaylistsProps) => {
 
 	const isLoading = getPlaylists.isLoading || getPlaylists.isFetchingNextPage;
 
-	const inView = useInView({ trackVisibility: true, delay: 100 });
+	const inView = useInView({
+		trackVisibility: true,
+		delay: 100,
+		threshold: 0.3
+	});
 	useEffect(() => {
 		const fetchMore = async () => {
 			await getPlaylists.fetchNextPage();
@@ -223,11 +227,12 @@ const Home: NextPage = () => {
 				</div>
 			</Container>
 			{isPassingPlaylistsHeader ? (
-				<div className="fixed top-0 left-0 w-full bg-[#151515] pt-20 px-6 shadow-sm shadow-[#3c3c3c] pb-2">
-					<Container>
+				<div className="fixed top-0 left-0 w-full bg-[#151515] pt-[4.5rem] shadow-sm shadow-[#3c3c3c]">
+					<Container className="flex items-center justify-between py-3">
+						<h1 className="font-bold text-2xl sm:text-3xl">All playlists</h1>
 						<button
 							type="button"
-							className="bg-[#292929] rounded-md flex items-center gap-x-2 py-2 w-full justify-center"
+							className="bg-[#292929] px-4 py-2 rounded-md flex items-center gap-x-2 hover:bg-[#3c3c3c] transition-colors"
 							onClick={() => setIsOpen(true)}
 						>
 							<span className="text-sm font-medium">Filter</span>
