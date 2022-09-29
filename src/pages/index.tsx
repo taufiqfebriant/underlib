@@ -1,5 +1,6 @@
 import { Combobox, Dialog } from '@headlessui/react';
 import clsx from 'clsx';
+import { motion } from 'framer-motion';
 import { NextPage } from 'next';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
@@ -226,21 +227,34 @@ const Home: NextPage = () => {
 					<Playlists tags={selectedTags} />
 				</div>
 			</Container>
-			{isPassingPlaylistsHeader ? (
-				<div className="fixed top-0 left-0 w-full bg-[#151515] pt-[4.5rem] shadow-sm shadow-[#3c3c3c]">
-					<Container className="flex items-center justify-between py-3">
-						<h1 className="font-bold text-2xl sm:text-3xl">All playlists</h1>
-						<button
-							type="button"
-							className="bg-[#292929] px-4 py-2 rounded-md flex items-center gap-x-2 hover:bg-[#3c3c3c] transition-colors"
-							onClick={() => setIsOpen(true)}
-						>
-							<span className="text-sm font-medium">Filter</span>
-							<MdFilterAlt />
-						</button>
-					</Container>
-				</div>
-			) : null}
+			<motion.div
+				className="fixed top-0 left-0 w-full bg-[#151515] shadow-sm shadow-[#3c3c3c]"
+				animate={isPassingPlaylistsHeader ? 'open' : 'closed'}
+				variants={{
+					open: {
+						display: 'block',
+						paddingTop: '4.5rem'
+					},
+					closed: {
+						paddingTop: 0,
+						transitionEnd: {
+							display: 'none'
+						}
+					}
+				}}
+			>
+				<Container className="flex items-center justify-between py-3">
+					<h1 className="font-bold text-2xl sm:text-3xl">All playlists</h1>
+					<button
+						type="button"
+						className="bg-[#292929] px-4 py-2 rounded-md flex items-center gap-x-2 hover:bg-[#3c3c3c] transition-colors"
+						onClick={() => setIsOpen(true)}
+					>
+						<span className="text-sm font-medium">Filter</span>
+						<MdFilterAlt />
+					</button>
+				</Container>
+			</motion.div>
 			<Dialog
 				open={isOpen}
 				onClose={() => setIsOpen(false)}
