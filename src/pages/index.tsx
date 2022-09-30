@@ -127,7 +127,7 @@ const Home: NextPageWithLayout = () => {
 	const [query, setQuery] = useState('');
 	const [selectedTags, setSelectedTags] = useState<string[]>([]);
 	const debouncedQuery: string = useDebounce<string>(query, 1000);
-	const [isOpen, setIsOpen] = useState(true);
+	const [isOpen, setIsOpen] = useState(false);
 	const tagsInputRef = useRef<HTMLInputElement>(null);
 
 	const [isPassingPlaylistsHeader, setIsPassingPlaylistsHeader] =
