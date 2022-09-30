@@ -3,12 +3,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as Toast from '@radix-ui/react-toast';
 import clsx from 'clsx';
 import Image from 'next/image';
-import { Fragment, ReactElement, useRef, useState } from 'react';
+import { Fragment, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { FaChevronDown, FaChevronUp, FaExternalLinkAlt } from 'react-icons/fa';
 import { MdClose } from 'react-icons/md';
 import { z } from 'zod';
-import { Layout } from '../components/Layout';
+import { getLayout } from '../components/Layout';
 import Spinner from '../components/Spinner';
 import { useDebounce } from '../hooks/use-debounce';
 import { ResponseData } from '../server/router/me.playlists';
@@ -426,8 +426,6 @@ const Submit: NextPageWithLayout = () => {
 	);
 };
 
-Submit.getLayout = function getLayout(page: ReactElement) {
-	return <Layout>{page}</Layout>;
-};
+Submit.getLayout = getLayout;
 
 export default Submit;

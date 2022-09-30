@@ -15,8 +15,8 @@ import {
 	MdPerson,
 	MdQueueMusic
 } from 'react-icons/md';
-import { useSignInDialogStore } from '../pages/_app';
 import { Container } from './Container';
+import CustomLink from './CustomLink';
 
 const useScrollPosition = () => {
 	const [scrollPosition, setScrollPosition] = useState(0);
@@ -41,7 +41,6 @@ const Nav = () => {
 	const scrollPosition = useScrollPosition();
 	const [isOpen, setIsOpen] = useState(false);
 	const router = useRouter();
-	const signInDialogStore = useSignInDialogStore();
 
 	return (
 		<>
@@ -68,17 +67,17 @@ const Nav = () => {
 								Home
 							</a>
 						</Link>
-						<Link href="/submit" passHref>
-							<a
-								className={clsx(
-									`mx-4 text-sm font-medium transition-colors hover:text-white`,
-									{ 'text-[#989898]': router.asPath !== '/submit' },
-									{ 'text-white': router.asPath === '/submit' }
-								)}
-							>
-								Submit your playlist
-							</a>
-						</Link>
+						<CustomLink
+							href="/submit"
+							protectedRoute
+							className={clsx(
+								`mx-4 text-sm font-medium transition-colors hover:text-white`,
+								{ 'text-[#989898]': router.asPath !== '/submit' },
+								{ 'text-white': router.asPath === '/submit' }
+							)}
+						>
+							Submit your playlist
+						</CustomLink>
 						{session.data ? (
 							<Popover>
 								{({ open }) => (
@@ -146,7 +145,7 @@ const Nav = () => {
 				</Container>
 			</nav>
 			<Dialog open={isOpen} onClose={() => setIsOpen(false)}>
-				<Dialog.Panel className="fixed top-0 left-0 z-10 h-full w-full bg-[#151515] px-6 pt-28">
+				<Dialog.Panel className="fixed top-0 left-0 z-10 h-full w-full bg-[#151515] px-6 pt-28 md:hidden">
 					{!session.data ? (
 						<button
 							onClick={async () => await signIn('spotify')}
@@ -173,27 +172,17 @@ const Nav = () => {
 								Home
 							</a>
 						</Link>
-						{session.data ? (
-							<Link href="/submit" passHref>
-								<a
-									className={clsx(
-										`py-3 text-xl transition-colors hover:text-white`,
-										{ 'text-[#989898]': router.asPath !== '/submit' },
-										{ 'text-white': router.asPath === '/submit' }
-									)}
-									onClick={() => setIsOpen(false)}
-								>
-									Submit your playlist
-								</a>
-							</Link>
-						) : (
-							<button
-								className="py-3 text-left text-xl text-[#989898] transition-colors hover:text-white"
-								onClick={() => signInDialogStore.setIsOpen(true)}
-							>
-								Submit your playlist
-							</button>
-						)}
+						<CustomLink
+							href="/submit"
+							protectedRoute
+							className={clsx(
+								`py-3 text-left text-xl transition-colors hover:text-white`,
+								{ 'text-[#989898]': router.asPath !== '/submit' },
+								{ 'text-white': router.asPath === '/submit' }
+							)}
+						>
+							Submit your playlist
+						</CustomLink>
 					</div>
 					{session.data ? (
 						<>

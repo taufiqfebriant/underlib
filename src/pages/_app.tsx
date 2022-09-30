@@ -8,19 +8,8 @@ import { SessionProvider } from 'next-auth/react';
 import type { AppProps } from 'next/app';
 import type { ReactElement, ReactNode } from 'react';
 import superjson from 'superjson';
-import create from 'zustand';
 import type { AppRouter } from '../server/router';
 import '../styles/globals.css';
-
-type SignInDialogState = {
-	isOpen: boolean;
-	setIsOpen: (value: boolean) => void;
-};
-
-export const useSignInDialogStore = create<SignInDialogState>(set => ({
-	isOpen: false,
-	setIsOpen: value => set(() => ({ isOpen: value }))
-}));
 
 export type NextPageWithLayout<P = Record<string, unknown>, IP = P> = NextPage<
 	P,
