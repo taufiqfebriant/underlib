@@ -1,17 +1,18 @@
 import { Dialog } from '@headlessui/react';
-import type { HTMLAttributes, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { MdClose } from 'react-icons/md';
 import { twMerge } from 'tailwind-merge';
 import type { ExtractProps } from '../types/helpers';
 
 type DialogProps = ExtractProps<typeof Dialog>;
+type DialogPanelProps = ExtractProps<typeof Dialog['Panel']>;
 
 export type CustomDialogProps = {
 	title?: string;
 	children: ReactNode;
 	isOpen: NonNullable<DialogProps['open']>;
 	setIsOpen: (value: boolean) => void;
-} & Pick<HTMLAttributes<HTMLOrSVGElement>, 'className'>;
+} & Pick<DialogPanelProps, 'className'>;
 
 const CustomDialog = (props: CustomDialogProps) => {
 	const className = twMerge(
