@@ -14,7 +14,7 @@ export const PlaylistCard = (props: Props) => {
 		<Link href={`/playlists/${data.id}`} passHref>
 			<a
 				key={data.id}
-				className={`flex h-[6.25rem] overflow-hidden rounded-md bg-[#292929] md:h-80 md:max-w-[200px] md:flex-col ${
+				className={`flex h-[6.25rem] overflow-hidden rounded-md bg-[#292929] md:h-[19.5rem] md:max-w-[200px] md:flex-col ${
 					className || ''
 				}`}
 				{...rest}
@@ -44,7 +44,7 @@ export const PlaylistCard = (props: Props) => {
 						{data.tags.map(tag => (
 							<div
 								key={tag.name}
-								className="whitespace-nowrap rounded-md bg-[#3c3c3c] px-2 py-1 text-xs md:text-sm"
+								className="whitespace-nowrap rounded-md bg-[#3c3c3c] px-2 py-1 text-xs"
 							>
 								{tag.name}
 							</div>

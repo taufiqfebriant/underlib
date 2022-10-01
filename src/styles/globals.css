@@ -9,3 +9,12 @@
 	font-display: optional;
 	src: url('/fonts/Inter-VariableFont_slnt,wght.woff2') format('woff2');
 }
+
+#nprogress .bar {
+	background: theme('colors.white');
+	height: theme('spacing.1');
+}
+
+#nprogress .peg {
+	box-shadow: 0 0 10px theme('colors.white'), 0 0 5px theme('colors.white');
+}

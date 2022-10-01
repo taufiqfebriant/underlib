@@ -6,6 +6,9 @@ import { NextPage } from 'next';
 import type { Session } from 'next-auth';
 import { SessionProvider } from 'next-auth/react';
 import type { AppProps } from 'next/app';
+import Router from 'next/router';
+import NProgress from 'nprogress';
+import 'nprogress/nprogress.css';
 import type { ReactElement, ReactNode } from 'react';
 import superjson from 'superjson';
 import type { AppRouter } from '../server/router';
@@ -21,6 +24,12 @@ export type NextPageWithLayout<P = Record<string, unknown>, IP = P> = NextPage<
 type AppPropsWithLayout = AppProps<{ session: Session | null }> & {
 	Component: NextPageWithLayout;
 };
+
+NProgress.configure({ showSpinner: false, speed: 750 });
+
+Router.events.on('routeChangeStart', () => NProgress.start());
+Router.events.on('routeChangeComplete', () => NProgress.done());
+Router.events.on('routeChangeError', () => NProgress.done());
 
 const MyApp = ({
 	Component,
