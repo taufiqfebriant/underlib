@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { HTMLAttributes } from 'react';
+import type { HTMLAttributes } from 'react';
 
 type Props = {
 	as?: keyof JSX.IntrinsicElements;
@@ -18,7 +18,7 @@ export const Container = ({
 
 	return (
 		<Wrapper
-			className={clsx('max-w-6xl mx-auto px-6 xl:px-0', ...restClassNames)}
+			className={clsx('mx-auto max-w-6xl px-6 xl:px-0', ...restClassNames)}
 			{...rest}
 		>
 			{children}

@@ -12,7 +12,7 @@ import { PlaylistCard } from '../components/PlaylistCard';
 import Spinner from '../components/Spinner';
 import { useDebounce } from '../hooks/use-debounce';
 import { trpc } from '../utils/trpc';
-import { NextPageWithLayout } from './_app';
+import type { NextPageWithLayout } from './_app';
 
 const TagOptions = ({ query, except }: { query: string; except: string[] }) => {
 	const getTags = trpc.useQuery(['tags.all', { q: query, except }]);

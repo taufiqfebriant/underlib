@@ -1,15 +1,15 @@
 import axios from 'axios';
-import { AccessToken } from 'spotify-types';
-import { env } from '../../env/server.mjs';
+import { env } from '../env/server.mjs';
+import type { AccessToken } from '../types/spotify';
 
-export const getAccessToken = async () => {
-	const encodedString = Buffer.from(
-		`${env.SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`
-	).toString('base64');
+const encodedString = Buffer.from(
+	`${env.SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`
+).toString('base64');
 
+export const getAccessToken = async (token = env.SPOTIFY_REFRESH_TOKEN) => {
 	const params = new URLSearchParams({
 		grant_type: 'refresh_token',
-		refresh_token: env.SPOTIFY_REFRESH_TOKEN
+		refresh_token: token
 	}).toString();
 
 	const response = await axios.post<AccessToken>(
@@ -23,5 +23,5 @@ export const getAccessToken = async () => {
 		}
 	);
 
-	return response.data.access_token;
+	return response.data;
 };

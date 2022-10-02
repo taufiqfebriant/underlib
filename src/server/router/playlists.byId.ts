@@ -3,7 +3,7 @@ import { TRPCError } from '@trpc/server';
 import type { AxiosResponse } from 'axios';
 import axios from 'axios';
 import { z } from 'zod';
-import { getAccessToken } from '../utils/spotify';
+import { getAccessToken } from '../../utils/spotify';
 import { createRouter } from './context';
 
 export const playlistsById = createRouter().query('playlists.byId', {
@@ -30,14 +30,14 @@ export const playlistsById = createRouter().query('playlists.byId', {
 			throw new TRPCError({ code: 'NOT_FOUND' });
 		}
 
-		const accessToken = await getAccessToken();
+		const getAccessTokenData = await getAccessToken();
 
 		const response: AxiosResponse<SpotifyApi.SinglePlaylistResponse> =
 			await axios.get(`https://api.spotify.com/v1/playlists/${input.id}`, {
 				headers: {
 					Accept: 'application/json',
 					'Content-Type': 'application/json',
-					Authorization: `Bearer ${accessToken}`
+					Authorization: `Bearer ${getAccessTokenData.access_token}`
 				}
 			});
 
@@ -48,7 +48,7 @@ export const playlistsById = createRouter().query('playlists.byId', {
 					headers: {
 						Accept: 'application/json',
 						'Content-Type': 'application/json',
-						Authorization: `Bearer ${accessToken}`
+						Authorization: `Bearer ${getAccessTokenData.access_token}`
 					}
 				}
 			);

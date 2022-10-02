@@ -5,15 +5,15 @@ import clsx from 'clsx';
 import Image from 'next/image';
 import { Fragment, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { FaChevronDown, FaChevronUp, FaExternalLinkAlt } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { MdClose } from 'react-icons/md';
 import { z } from 'zod';
 import { getLayout } from '../components/Layout';
 import Spinner from '../components/Spinner';
 import { useDebounce } from '../hooks/use-debounce';
-import { ResponseData } from '../server/router/me.playlists';
+import type { ResponseData } from '../server/router/me.playlists';
 import { trpc } from '../utils/trpc';
-import { NextPageWithLayout } from './_app';
+import type { NextPageWithLayout } from './_app';
 
 type TagOptionsProps = {
 	query: string;
@@ -118,29 +118,44 @@ const Submit: NextPageWithLayout = () => {
 
 	if (getPlaylists.isLoading) {
 		return (
-			<main className="flex min-h-screen items-center justify-center">
+			<div className="flex justify-center">
 				<Spinner className="h-8 w-8 fill-white text-[#292929]" />
-			</main>
+			</div>
 		);
 	}
 
 	if (getPlaylists.error) {
-		return <p>Something went wrong</p>;
+		return <p className="text-center">Something went wrong</p>;
 	}
 
 	if (!getPlaylists.data?.pages[0]?.data.length) {
 		return (
-			<main className="mt-36 max-w-6xl px-6">
-				<h1 className="mt-14 text-center text-3xl font-bold text-white">
-					Oh no!
-				</h1>
+			<>
+				<h1 className="text-center text-5xl font-bold text-white">Oh no!</h1>
 				<p className="mt-2 text-center text-[#989898]">
 					You don&apos;t have a playlist to submit.
 				</p>
-				<div className="mt-4">
-					<p>What should i do?</p>
-					<ul className="list-inside list-disc">
+				<div className="mx-auto mt-8 max-w-2xl">
+					<p>There&apos;s a couple of reasons:</p>
+					<ul className="ml-4 list-outside list-disc font-medium">
+						<li className="mt-1">You already submit them all.</li>
+						<li>You&apos;re not the owner of the playlist.</li>
 						<li>
+							Your playlist visibility is private or you have not added it to
+							your profile yet.{' '}
+							<span className="font-normal text-[#989898]">
+								Make sure your playlist is set to public and{' '}
+								<a
+									href="https://allthings.how/how-to-add-playlists-to-your-spotify-profile"
+									target="_blank"
+									rel="noreferrer"
+									className="font-medium underline"
+								>
+									added to your profile
+								</a>
+							</span>
+						</li>
+						{/* <li>
 							Make sure your playlist is set to public and added to your
 							profile. Tutorial:{' '}
 							<a
@@ -154,10 +169,10 @@ const Submit: NextPageWithLayout = () => {
 								</span>
 								<FaExternalLinkAlt />
 							</a>
-						</li>
+						</li> */}
 					</ul>
 				</div>
-			</main>
+			</>
 		);
 	}
 

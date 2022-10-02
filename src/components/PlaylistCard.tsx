@@ -1,7 +1,7 @@
 import Image from 'next/future/image';
 import Link from 'next/link';
-import { ComponentPropsWithoutRef } from 'react';
-import { inferQueryOutput } from '../utils/trpc';
+import type { ComponentPropsWithoutRef } from 'react';
+import type { inferQueryOutput } from '../utils/trpc';
 
 interface Props extends ComponentPropsWithoutRef<'a'> {
 	data: inferQueryOutput<'playlists.all'>['data'][number];

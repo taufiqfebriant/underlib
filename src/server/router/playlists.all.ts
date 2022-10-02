@@ -1,8 +1,9 @@
+/// <reference types="spotify-api">
 import { Prisma } from '@prisma/client';
-import axios, { AxiosResponse } from 'axios';
-import { SimplifiedPlaylist } from 'spotify-types';
+import type { AxiosResponse } from 'axios';
+import axios from 'axios';
 import { z } from 'zod';
-import { getAccessToken } from '../utils/spotify';
+import { getAccessToken } from '../../utils/spotify';
 import { createRouter } from './context';
 
 export const playlistsAll = createRouter().query('playlists.all', {
@@ -50,10 +51,12 @@ export const playlistsAll = createRouter().query('playlists.all', {
 			skip: input.cursor ? 1 : undefined
 		});
 
-		const data: (Pick<
-			SimplifiedPlaylist,
+		type SpotifyPlaylistData = Pick<
+			SpotifyApi.SinglePlaylistResponse,
 			'id' | 'name' | 'description' | 'images' | 'owner'
-		> &
+		>;
+
+		const data: (SpotifyPlaylistData &
 			Pick<Prisma.PlaylistGetPayload<{ select: typeof select }>, 'tags'>)[] =
 			[];
 
@@ -67,27 +70,20 @@ export const playlistsAll = createRouter().query('playlists.all', {
 			cursor = playlists[playlists.length - 1]?.id ?? null;
 		}
 
-		const accessToken = await getAccessToken();
+		const getAccessTokenData = await getAccessToken();
 
 		const spotifyPlaylistPromises = playlists.map(async playlist => {
-			const spotifyResponse: AxiosResponse<
-				Pick<
-					SimplifiedPlaylist,
-					'id' | 'name' | 'description' | 'images' | 'owner'
-				>
-			> = await axios.get(
-				`https://api.spotify.com/v1/playlists/${playlist.id}`,
-				{
+			const spotifyResponse: AxiosResponse<SpotifyPlaylistData> =
+				await axios.get(`https://api.spotify.com/v1/playlists/${playlist.id}`, {
 					headers: {
 						Accept: 'application/json',
 						'Content-Type': 'application/json',
-						Authorization: `Bearer ${accessToken}`
+						Authorization: `Bearer ${getAccessTokenData.access_token}`
 					},
 					params: {
 						fields: 'id,name,description,images,owner'
 					}
-				}
-			);
+				});
 
 			return spotifyResponse.data;
 		});
