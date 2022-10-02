@@ -1,3 +1,3 @@
-import { ComponentType } from 'react';
+import type { ComponentType } from 'react';
 
 export type ExtractProps<T> = T extends ComponentType<infer P> ? P : T;

@@ -39,15 +39,40 @@ const useScrollPosition = () => {
 const Nav = () => {
 	const session = useSession();
 	const scrollPosition = useScrollPosition();
-	const [isOpen, setIsOpen] = useState(false);
 	const router = useRouter();
+	const [isOpen, setIsOpen] = useState(false);
+
+	useEffect(() => {
+		const handleRouteChangeComplete = () => {
+			if (isOpen) {
+				setIsOpen(false);
+			}
+		};
+
+		router.events.on('routeChangeComplete', handleRouteChangeComplete);
+
+		const handleRouteChangeError = () => {
+			if (isOpen) {
+				setIsOpen(false);
+			}
+		};
+
+		router.events.on('routeChangeError', handleRouteChangeError);
+
+		return () => {
+			router.events.off('routeChangeComplete', handleRouteChangeComplete);
+			router.events.off('routeChangeError', handleRouteChangeError);
+		};
+	}, [isOpen, router.events]);
 
 	return (
 		<>
 			<nav
 				className={clsx(
 					'fixed top-0 left-0 z-20 w-full justify-between bg-[#151515] py-4 transition-shadow',
-					{ 'shadow-sm shadow-[#3c3c3c]': scrollPosition || isOpen },
+					{
+						'shadow-sm shadow-[#3c3c3c]': scrollPosition || isOpen
+					},
 					{ 'shadow-none': !scrollPosition && !isOpen }
 				)}
 			>
@@ -134,13 +159,9 @@ const Nav = () => {
 					<button
 						type="button"
 						onClick={() => setIsOpen(prev => !prev)}
-						className="md:hidden"
+						className="text-3xl md:hidden"
 					>
-						{isOpen ? (
-							<MdClose className="text-3xl" />
-						) : (
-							<MdMenu className="text-3xl" />
-						)}
+						{isOpen ? <MdClose /> : <MdMenu />}
 					</button>
 				</Container>
 			</nav>
@@ -167,7 +188,6 @@ const Nav = () => {
 									{ 'text-[#989898]': router.asPath !== '/' },
 									{ 'text-white': router.asPath === '/' }
 								)}
-								onClick={() => setIsOpen(false)}
 							>
 								Home
 							</a>
@@ -210,7 +230,6 @@ const Nav = () => {
 											{ 'text-[#989898]': router.asPath !== '/me/playlists' },
 											{ 'text-white': router.asPath === '/me/playlists' }
 										)}
-										onClick={() => setIsOpen(false)}
 									>
 										My playlists
 									</a>
