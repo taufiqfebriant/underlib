@@ -1,6 +1,7 @@
+/// <reference types="spotify-api">
 import { TRPCError } from '@trpc/server';
-import axios, { AxiosResponse } from 'axios';
-import { SimplifiedPlaylist } from 'spotify-types';
+import type { AxiosResponse } from 'axios';
+import axios from 'axios';
 import { z } from 'zod';
 import { getAccessToken } from '../utils/spotify';
 import { createRouter } from './context';
@@ -17,7 +18,11 @@ export const playlistsById = createRouter().query('playlists.byId', {
 				id: input.id
 			},
 			select: {
-				id: true
+				tags: {
+					select: {
+						name: true
+					}
+				}
 			}
 		});
 
@@ -27,17 +32,34 @@ export const playlistsById = createRouter().query('playlists.byId', {
 
 		const accessToken = await getAccessToken();
 
-		const response: AxiosResponse<SimplifiedPlaylist> = await axios.get(
-			`https://api.spotify.com/v1/playlists/${input.id}`,
-			{
+		const response: AxiosResponse<SpotifyApi.SinglePlaylistResponse> =
+			await axios.get(`https://api.spotify.com/v1/playlists/${input.id}`, {
 				headers: {
 					Accept: 'application/json',
 					'Content-Type': 'application/json',
 					Authorization: `Bearer ${accessToken}`
 				}
-			}
-		);
+			});
 
-		return { data: response.data };
+		const getUserProfileResponse: AxiosResponse<SpotifyApi.UserObjectPublic> =
+			await axios.get(
+				`https://api.spotify.com/v1/users/${response.data.owner.id}`,
+				{
+					headers: {
+						Accept: 'application/json',
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${accessToken}`
+					}
+				}
+			);
+
+		response.data.owner.images = getUserProfileResponse.data.images;
+
+		const data = {
+			...response.data,
+			tags: playlist.tags
+		};
+
+		return { data };
 	}
 });
