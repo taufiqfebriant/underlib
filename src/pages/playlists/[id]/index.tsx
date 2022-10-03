@@ -1,22 +1,51 @@
+import { Menu } from '@headlessui/react';
+import clsx from 'clsx';
+import { useSession } from 'next-auth/react';
 import Image from 'next/future/image';
+import type { LinkProps } from 'next/link';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
+import type { AnchorHTMLAttributes, ReactNode } from 'react';
+import { forwardRef } from 'react';
 import { BiLinkExternal } from 'react-icons/bi';
-import { FaSpotify } from 'react-icons/fa';
+import { FaEllipsisH, FaSpotify } from 'react-icons/fa';
 import { MdPerson } from 'react-icons/md';
-import { getLayout } from '../../components/Layout';
-import Spinner from '../../components/Spinner';
-import { trpc } from '../../utils/trpc';
-import type { NextPageWithLayout } from '../_app';
+import { getLayout } from '../../../components/Layout';
+import Spinner from '../../../components/Spinner';
+import { trpc } from '../../../utils/trpc';
+import type { NextPageWithLayout } from '../../_app';
+
+type CustomLinkProps = Pick<LinkProps, 'href'> &
+	Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> & {
+		children?: ReactNode;
+	};
+
+const CustomLink = forwardRef<HTMLAnchorElement, CustomLinkProps>(
+	(props, ref) => {
+		const { href, children, ...rest } = props;
+
+		return (
+			<Link href={href} passHref>
+				<a ref={ref} {...rest}>
+					{children}
+				</a>
+			</Link>
+		);
+	}
+);
+
+CustomLink.displayName = 'CustomLink';
 
 const Playlist: NextPageWithLayout = () => {
 	const router = useRouter();
 	const id = router.query.id as string;
 
+	const session = useSession();
+	const getPlaylist = trpc.useQuery(['playlists.byId', { id }]);
+
 	if (!id) {
 		return <p>You must include a playlist ID</p>;
 	}
-
-	const getPlaylist = trpc.useQuery(['playlists.byId', { id }]);
 
 	if (getPlaylist.isLoading) {
 		return (
@@ -109,8 +138,55 @@ const Playlist: NextPageWithLayout = () => {
 					</div>
 				</div>
 			</div>
-			<div className="mt-6 flex items-center justify-between">
-				<p>{getPlaylist.data?.data.tracks.total} songs</p>
+			<div className="mt-6 flex items-center gap-x-6">
+				<p className="flex-1">{getPlaylist.data?.data.tracks.total} songs</p>
+
+				{session.data?.user.id === getPlaylist.data?.data.owner.id ? (
+					<Menu as="div" className="relative">
+						{({ open }) => (
+							<>
+								<Menu.Button
+									className={clsx(
+										'rounded-md p-2 text-2xl transition-colors hover:bg-[#292929]',
+										{ 'bg-[#292929]': open }
+									)}
+								>
+									<FaEllipsisH />
+								</Menu.Button>
+								<Menu.Items className="absolute top-12 right-0 flex w-40 flex-col divide-y divide-[#3c3c3c] overflow-hidden rounded-md border border-[#3c3c3c]">
+									<Menu.Item>
+										{({ active }) => (
+											<CustomLink
+												href={`/playlists/${id}/edit`}
+												className={clsx(
+													'px-4 py-2',
+													{ 'bg-[#3c3c3c]': active },
+													{ 'bg-[#292929]': !active }
+												)}
+											>
+												Edit tags
+											</CustomLink>
+										)}
+									</Menu.Item>
+									<Menu.Item>
+										{({ active }) => (
+											<CustomLink
+												href={`/playlists/${id}/edit`}
+												className={clsx(
+													'px-4 py-2',
+													{ 'bg-[#3c3c3c]': active },
+													{ 'bg-[#292929]': !active }
+												)}
+											>
+												Delete
+											</CustomLink>
+										)}
+									</Menu.Item>
+								</Menu.Items>
+							</>
+						)}
+					</Menu>
+				) : null}
 
 				<a
 					href={getPlaylist.data?.data.external_urls.spotify}

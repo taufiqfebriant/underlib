@@ -1,5 +1,6 @@
 import { useSession } from 'next-auth/react';
-import Link, { LinkProps } from 'next/link';
+import type { LinkProps } from 'next/link';
+import Link from 'next/link';
 import type { HTMLAttributes, ReactNode } from 'react';
 import { useSignInDialogStore } from './SignInDialog';
 

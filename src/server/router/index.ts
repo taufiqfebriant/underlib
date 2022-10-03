@@ -8,6 +8,7 @@ import { meSubmittedPlaylists } from './me.submittedPlaylists';
 import { playlistsRouter } from './playlists';
 import { playlistsAll } from './playlists.all';
 import { playlistsById } from './playlists.byId';
+import { playlistsUpdate } from './playlists.update';
 import { protectedExampleRouter } from './protected-example-router';
 import { tagsRouter } from './tags';
 
@@ -18,6 +19,7 @@ export const appRouter = createRouter()
 	.merge('playlists.', playlistsRouter)
 	.merge(playlistsAll)
 	.merge(playlistsById)
+	.merge(playlistsUpdate)
 	.merge('tags.', tagsRouter)
 	.merge(mePlaylists)
 	.merge(meSubmittedPlaylists);

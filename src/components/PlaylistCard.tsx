@@ -14,7 +14,7 @@ export const PlaylistCard = (props: Props) => {
 		<Link href={`/playlists/${data.id}`} passHref>
 			<a
 				key={data.id}
-				className={`flex h-[6.25rem] overflow-hidden rounded-md bg-[#292929] md:h-[19.5rem] md:max-w-[200px] md:flex-col ${
+				className={`flex h-[6.25rem] overflow-hidden rounded-md bg-[#292929] hover:outline hover:outline-[#3c3c3c] md:h-[19.5rem] md:max-w-[200px] md:flex-col ${
 					className || ''
 				}`}
 				{...rest}
