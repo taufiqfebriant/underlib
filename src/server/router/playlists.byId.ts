@@ -32,14 +32,39 @@ export const playlistsById = createRouter().query('playlists.byId', {
 
 		const getAccessTokenData = await getAccessToken();
 
-		const response: AxiosResponse<SpotifyApi.SinglePlaylistResponse> =
-			await axios.get(`https://api.spotify.com/v1/playlists/${input.id}`, {
+		type SpotifyPlaylistData = Pick<
+			SpotifyApi.SinglePlaylistResponse,
+			'name' | 'description' | 'external_urls' | 'images'
+		> & {
+			owner: Pick<
+				SpotifyApi.SinglePlaylistResponse['owner'],
+				'display_name' | 'id'
+			>;
+			tracks: Pick<SpotifyApi.SinglePlaylistResponse['tracks'], 'total'> & {
+				items: Array<{
+					track:
+						| (Pick<SpotifyApi.TrackObjectFull, 'id' | 'name'> & {
+								artists: Array<Pick<SpotifyApi.ArtistObjectSimplified, 'name'>>;
+						  })
+						| null;
+				}>;
+			};
+		};
+
+		const response: AxiosResponse<SpotifyPlaylistData> = await axios.get(
+			`https://api.spotify.com/v1/playlists/${input.id}`,
+			{
 				headers: {
 					Accept: 'application/json',
 					'Content-Type': 'application/json',
 					Authorization: `Bearer ${getAccessTokenData.access_token}`
+				},
+				params: {
+					fields:
+						'name,description,external_urls,images,owner.display_name,owner.id,tracks.total,tracks.items(track(id,name,artists(name)))'
 				}
-			});
+			}
+		);
 
 		const getUserProfileResponse: AxiosResponse<SpotifyApi.UserObjectPublic> =
 			await axios.get(
@@ -53,11 +78,13 @@ export const playlistsById = createRouter().query('playlists.byId', {
 				}
 			);
 
-		response.data.owner.images = getUserProfileResponse.data.images;
-
 		const data = {
 			...response.data,
-			tags: playlist.tags
+			tags: playlist.tags,
+			owner: {
+				...response.data.owner,
+				images: getUserProfileResponse.data.images
+			}
 		};
 
 		return { data };

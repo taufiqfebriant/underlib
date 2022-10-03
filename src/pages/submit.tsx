@@ -119,7 +119,7 @@ const Submit: NextPageWithLayout = () => {
 	if (getPlaylists.isLoading) {
 		return (
 			<div className="flex justify-center">
-				<Spinner className="h-8 w-8 fill-white text-[#292929]" />
+				<Spinner className="h-6 w-6 fill-white text-[#292929] md:h-8 md:w-8" />
 			</div>
 		);
 	}

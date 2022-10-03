@@ -3,13 +3,12 @@ import { useRouter } from 'next/router';
 import { BiLinkExternal } from 'react-icons/bi';
 import { FaSpotify } from 'react-icons/fa';
 import { MdPerson } from 'react-icons/md';
-import { Container } from '../../components/Container';
 import { getLayout } from '../../components/Layout';
 import Spinner from '../../components/Spinner';
 import { trpc } from '../../utils/trpc';
 import type { NextPageWithLayout } from '../_app';
 
-const PlaylistTracks: NextPageWithLayout = () => {
+const Playlist: NextPageWithLayout = () => {
 	const router = useRouter();
 	const id = router.query.id as string;
 
@@ -21,20 +20,31 @@ const PlaylistTracks: NextPageWithLayout = () => {
 
 	if (getPlaylist.isLoading) {
 		return (
-			<Container as="main" className="mt-32 mb-10 flex justify-center md:mt-28">
+			<div className="flex justify-center">
 				<Spinner className="h-6 w-6 fill-white text-[#292929] md:h-8 md:w-8" />
-			</Container>
+			</div>
+		);
+	}
+
+	if (getPlaylist.error?.data?.code === 'NOT_FOUND') {
+		return (
+			<div className="text-center">
+				<h1 className="text-2xl font-bold">Playlist not found</h1>
+				<p className="mt-2 font-medium text-[#989898]">
+					We can&apos;t find the playlist with the given ID.
+				</p>
+			</div>
 		);
 	}
 
 	if (getPlaylist.isError) {
 		return (
-			<Container as="main" className="mt-32 mb-10 md:mt-28">
+			<div className="text-center">
 				<h1 className="text-2xl font-bold">Something went wrong</h1>
 				<p className="mt-2 font-medium text-[#989898]">
 					We&apos;re really sorry. Please try to refresh the page.
 				</p>
-			</Container>
+			</div>
 		);
 	}
 
@@ -135,6 +145,6 @@ const PlaylistTracks: NextPageWithLayout = () => {
 	);
 };
 
-PlaylistTracks.getLayout = getLayout;
+Playlist.getLayout = getLayout;
 
-export default PlaylistTracks;
+export default Playlist;
