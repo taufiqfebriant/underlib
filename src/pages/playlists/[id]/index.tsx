@@ -6,10 +6,11 @@ import type { LinkProps } from 'next/link';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import type { AnchorHTMLAttributes, ReactNode } from 'react';
-import { forwardRef } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import { BiLinkExternal } from 'react-icons/bi';
 import { FaEllipsisH, FaSpotify } from 'react-icons/fa';
 import { MdPerson } from 'react-icons/md';
+import CustomDialog from '../../../components/CustomDialog';
 import { getLayout } from '../../../components/Layout';
 import Spinner from '../../../components/Spinner';
 import { trpc } from '../../../utils/trpc';
@@ -36,16 +37,25 @@ const CustomLink = forwardRef<HTMLAnchorElement, CustomLinkProps>(
 
 CustomLink.displayName = 'CustomLink';
 
-const Playlist: NextPageWithLayout = () => {
-	const router = useRouter();
-	const id = router.query.id as string;
+type ContentProps = {
+	id: string;
+};
 
+const Content = (props: ContentProps) => {
+	const [isOpen, setIsOpen] = useState(false);
 	const session = useSession();
-	const getPlaylist = trpc.useQuery(['playlists.byId', { id }]);
+	const router = useRouter();
 
-	if (!id) {
-		return <p>You must include a playlist ID</p>;
-	}
+	const deletePlaylistMutation = trpc.useMutation(['playlists.delete']);
+	const deletePlaylist = async () => {
+		try {
+			await deletePlaylistMutation.mutateAsync({ id: props.id });
+			setIsOpen(false);
+			router.push({ pathname: '/' });
+		} catch {}
+	};
+
+	const getPlaylist = trpc.useQuery(['playlists.byId', { id: props.id }]);
 
 	if (getPlaylist.isLoading) {
 		return (
@@ -157,29 +167,33 @@ const Playlist: NextPageWithLayout = () => {
 									<Menu.Item>
 										{({ active }) => (
 											<CustomLink
-												href={`/playlists/${id}/edit`}
+												href={{
+													pathname: '/playlists/[id]/edit',
+													query: { id: props.id }
+												}}
 												className={clsx(
 													'px-4 py-2',
 													{ 'bg-[#3c3c3c]': active },
 													{ 'bg-[#292929]': !active }
 												)}
 											>
-												Edit tags
+												Edit playlist
 											</CustomLink>
 										)}
 									</Menu.Item>
 									<Menu.Item>
 										{({ active }) => (
-											<CustomLink
-												href={`/playlists/${id}/edit`}
+											<button
+												type="button"
+												onClick={() => setIsOpen(true)}
 												className={clsx(
-													'px-4 py-2',
+													'px-4 py-2 text-left text-red-500',
 													{ 'bg-[#3c3c3c]': active },
 													{ 'bg-[#292929]': !active }
 												)}
 											>
 												Delete
-											</CustomLink>
+											</button>
 										)}
 									</Menu.Item>
 								</Menu.Items>
@@ -217,8 +231,57 @@ const Playlist: NextPageWithLayout = () => {
 					</div>
 				))}
 			</div>
+			<CustomDialog
+				title="Delete playlist"
+				isOpen={isOpen}
+				setIsOpen={setIsOpen}
+			>
+				<p>
+					Are you sure want to delete the playlist from this site?{' '}
+					<span className="text-[#989898]">
+						(Don&apos;t worry, your original playlist will not be deleted)
+					</span>
+				</p>
+				<div className="mt-8 mb-2 flex justify-end gap-x-2">
+					<button
+						type="button"
+						className="flex items-center gap-x-2 rounded-md bg-red-500 px-8 py-2 transition-colors hover:opacity-80 disabled:opacity-50"
+						onClick={deletePlaylist}
+						disabled={deletePlaylistMutation.isLoading}
+					>
+						{deletePlaylistMutation.isLoading ? (
+							<>
+								<Spinner className="h-5 w-5 fill-[#292929] text-white" />
+								<span>Deleting...</span>
+							</>
+						) : (
+							<span>Yes</span>
+						)}
+					</button>
+					<button
+						type="button"
+						className="rounded-md bg-[#292929] px-8 py-2 transition-colors hover:bg-[#3c3c3c]"
+						onClick={() => setIsOpen(false)}
+					>
+						No
+					</button>
+				</div>
+			</CustomDialog>
 		</>
 	);
+};
+
+const Playlist: NextPageWithLayout = () => {
+	const router = useRouter<'/playlists/[id]'>();
+	const [id, setId] = useState<string>();
+
+	useEffect(() => {
+		if (router.isReady && !id) {
+			setId(router.query.id);
+		}
+	}, [id, router.isReady, router.query.id]);
+
+	return id ? <Content id={id} /> : null;
 };
 
 Playlist.getLayout = getLayout;

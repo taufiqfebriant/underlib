@@ -4,7 +4,7 @@ import * as Toast from '@radix-ui/react-toast';
 import clsx from 'clsx';
 import Image from 'next/future/image';
 import { useRouter } from 'next/router';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { MdClose } from 'react-icons/md';
 import { z } from 'zod';
@@ -23,8 +23,16 @@ const schema = z.object({
 
 type Schema = z.infer<typeof schema>;
 
-const TagOptions = ({ query, except }: { query: string; except: string[] }) => {
-	const getTags = trpc.useQuery(['tags.all', { q: query, except }]);
+type TagOptionsProps = {
+	query: string;
+	except: string[];
+};
+
+const TagOptions = (props: TagOptionsProps) => {
+	const getTags = trpc.useQuery([
+		'tags.all',
+		{ q: props.query, except: props.except }
+	]);
 	const defaultClasses =
 		'px-4 cursor-pointer h-10 bg-[#292929] flex items-center';
 
@@ -32,11 +40,19 @@ const TagOptions = ({ query, except }: { query: string; except: string[] }) => {
 		return <div className={defaultClasses}>Something went wrong</div>;
 	}
 
-	if (!getTags.data?.data.length && !getTags.isLoading) {
+	const isNew =
+		props.query.length > 0 &&
+		!getTags.data?.data.length &&
+		!props.except.includes(props.query);
+
+	if (isNew) {
 		return (
-			<li className="flex h-10 items-center bg-[#292929] px-4">
-				There&apos;s no playlists with &quot;{query}&quot; tag
-			</li>
+			<Combobox.Option
+				value={props.query}
+				className={`${defaultClasses} transition-colors hover:bg-[#3c3c3c]`}
+			>
+				Create &quot;{props.query}&quot;
+			</Combobox.Option>
 		);
 	}
 
@@ -55,16 +71,16 @@ const TagOptions = ({ query, except }: { query: string; except: string[] }) => {
 	);
 };
 
-// TODO: redirect ke beranda jika belum login atau pengguna bukan pemilik playlist
-const EditPlaylist: NextPageWithLayout = () => {
-	const router = useRouter();
-	const id = router.query.id as string;
+type ContentProps = {
+	id: string;
+};
 
+const Content = (props: ContentProps) => {
 	const [query, setQuery] = useState('');
 	const debouncedQuery: string = useDebounce<string>(query, 1000);
 	const tagsInputRef = useRef<HTMLInputElement>(null);
 
-	const getPlaylist = trpc.useQuery(['playlists.byId', { id }]);
+	const getPlaylist = trpc.useQuery(['playlists.byId', { id: props.id }]);
 	const updatePlaylist = trpc.useMutation('playlists.update');
 
 	const form = useForm<Schema>({ resolver: zodResolver(schema) });
@@ -75,15 +91,11 @@ const EditPlaylist: NextPageWithLayout = () => {
 	const onSubmit = async (data: Schema) => {
 		try {
 			await updatePlaylist.mutateAsync({
-				id: id,
+				id: props.id,
 				tags: data.tags
 			});
 		} catch {}
 	};
-
-	if (!id) {
-		return <p>You must include a playlist ID</p>;
-	}
 
 	if (getPlaylist.isLoading) {
 		return (
@@ -224,10 +236,10 @@ const EditPlaylist: NextPageWithLayout = () => {
 							{updatingPlaylist ? (
 								<>
 									<Spinner className="h-5 w-5 fill-[#151515] text-[#989898]" />
-									<span>Submitting...</span>
+									<span>Saving...</span>
 								</>
 							) : (
-								<span>Submit</span>
+								<span>Save</span>
 							)}
 						</button>
 					</div>
@@ -253,6 +265,20 @@ const EditPlaylist: NextPageWithLayout = () => {
 			) : null}
 		</>
 	);
+};
+
+// TODO: redirect ke beranda jika belum login atau pengguna bukan pemilik playlist
+const EditPlaylist: NextPageWithLayout = () => {
+	const router = useRouter<'/playlists/[id]/edit'>();
+	const [id, setId] = useState<string>();
+
+	useEffect(() => {
+		if (router.isReady && !id) {
+			setId(router.query.id);
+		}
+	}, [id, router.isReady, router.query.id]);
+
+	return id ? <Content id={id} /> : null;
 };
 
 EditPlaylist.getLayout = getLayout;

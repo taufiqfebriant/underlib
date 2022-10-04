@@ -155,21 +155,6 @@ const Submit: NextPageWithLayout = () => {
 								</a>
 							</span>
 						</li>
-						{/* <li>
-							Make sure your playlist is set to public and added to your
-							profile. Tutorial:{' '}
-							<a
-								href="https://allthings.how/how-to-add-playlists-to-your-spotify-profile"
-								rel="noreferrer"
-								target="_blank"
-								className="flex items-center gap-x-2 text-cyan-600 hover:underline"
-							>
-								<span>
-									How to Add Playlists to Your Spotify Profile - All Things How
-								</span>
-								<FaExternalLinkAlt />
-							</a>
-						</li> */}
 					</ul>
 				</div>
 			</>

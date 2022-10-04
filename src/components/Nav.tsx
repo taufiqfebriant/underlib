@@ -81,7 +81,7 @@ const Nav = () => {
 						diskaver
 					</div>
 					<div className="hidden items-center md:flex">
-						<Link href="/" passHref scroll={false}>
+						<Link href={{ pathname: '/' }} passHref scroll={false}>
 							<a
 								className={clsx(
 									`mx-4 text-sm font-medium transition-colors hover:text-white`,
@@ -93,7 +93,7 @@ const Nav = () => {
 							</a>
 						</Link>
 						<CustomLink
-							href="/submit"
+							href={{ pathname: '/submit' }}
 							protectedRoute
 							className={clsx(
 								`mx-4 text-sm font-medium transition-colors hover:text-white`,
@@ -124,7 +124,11 @@ const Nav = () => {
 
 										<Popover.Panel className="absolute mt-2 w-48 overflow-hidden rounded-md bg-[#292929]">
 											<div className="flex flex-col divide-y divide-[#3c3c3c]">
-												<Popover.Button as={Link} href="/me/playlists" passHref>
+												<Popover.Button
+													as={Link}
+													href={{ pathname: '/me/playlists' }}
+													passHref
+												>
 													<a className="flex items-center gap-x-2 py-3 px-4 transition-all hover:bg-[#3c3c3c]">
 														<MdQueueMusic />
 														<span className="text-sm font-medium">
@@ -181,7 +185,7 @@ const Nav = () => {
 							'mt-8': !session.data
 						})}
 					>
-						<Link href="/" passHref>
+						<Link href={{ pathname: '/' }} passHref>
 							<a
 								className={clsx(
 									`py-3 text-xl transition-colors hover:text-white`,
@@ -193,7 +197,7 @@ const Nav = () => {
 							</a>
 						</Link>
 						<CustomLink
-							href="/submit"
+							href={{ pathname: '/submit' }}
 							protectedRoute
 							className={clsx(
 								`py-3 text-left text-xl transition-colors hover:text-white`,
@@ -223,7 +227,7 @@ const Nav = () => {
 								<p>{session.data.user.name}</p>
 							</div>
 							<div className="mt-2 flex flex-col divide-y divide-[#292929]">
-								<Link href="/me/playlists" passHref>
+								<Link href={{ pathname: '/me/playlists' }} passHref>
 									<a
 										className={clsx(
 											`py-3 text-xl transition-colors hover:text-white`,

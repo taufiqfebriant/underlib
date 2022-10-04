@@ -10,10 +10,14 @@ function defineNextConfig(config) {
 	return config;
 }
 
-export default defineNextConfig({
-	reactStrictMode: true,
-	swcMinify: true,
-	images: {
-		domains: ['i.scdn.co', 'mosaic.scdn.co']
-	}
-});
+import withRoutes from 'nextjs-routes/config';
+
+export default withRoutes()(
+	defineNextConfig({
+		reactStrictMode: true,
+		swcMinify: true,
+		images: {
+			domains: ['i.scdn.co', 'mosaic.scdn.co']
+		}
+	})
+);
