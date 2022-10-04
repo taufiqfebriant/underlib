@@ -17,6 +17,7 @@ import {
 } from 'react-icons/md';
 import { Container } from './Container';
 import CustomLink from './CustomLink';
+import Spinner from './Spinner';
 
 const useScrollPosition = () => {
 	const [scrollPosition, setScrollPosition] = useState(0);
@@ -103,8 +104,13 @@ const Nav = () => {
 						>
 							Submit your playlist
 						</CustomLink>
-						{session.data ? (
-							<Popover>
+
+						{session.status === 'loading' ? (
+							<Spinner className="h-5 w-5 fill-white text-[#3c3c3c]" />
+						) : null}
+
+						{session.status !== 'loading' && session.data ? (
+							<Popover as="div" className="relative">
 								{({ open }) => (
 									<>
 										<Popover.Button
@@ -122,7 +128,7 @@ const Nav = () => {
 											)}
 										</Popover.Button>
 
-										<Popover.Panel className="absolute mt-2 w-48 overflow-hidden rounded-md bg-[#292929]">
+										<Popover.Panel className="absolute right-0 top-12 w-48 overflow-hidden rounded-md bg-[#292929]">
 											<div className="flex flex-col divide-y divide-[#3c3c3c]">
 												<Popover.Button
 													as={Link}
@@ -148,7 +154,9 @@ const Nav = () => {
 									</>
 								)}
 							</Popover>
-						) : (
+						) : null}
+
+						{session.status !== 'loading' && !session.data ? (
 							<button
 								onClick={async () => await signIn('spotify')}
 								className="ml-3 flex items-center gap-x-2 rounded-md bg-[#1ed760] py-2 px-4 transition-opacity hover:opacity-90"
@@ -158,7 +166,7 @@ const Nav = () => {
 									Sign in with Spotify
 								</span>
 							</button>
-						)}
+						) : null}
 					</div>
 					<button
 						type="button"
