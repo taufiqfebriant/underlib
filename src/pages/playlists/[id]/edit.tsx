@@ -130,8 +130,10 @@ const Content = (props: ContentProps) => {
 	return (
 		<>
 			<div className="mx-auto max-w-2xl">
+				<h1 className="text-center text-4xl font-bold">Edit playlist</h1>
+
 				{getPlaylist.data?.data.images[0] ? (
-					<div className="flex justify-center">
+					<div className="mt-10 flex justify-center">
 						<div className="relative h-[200px] w-[200px] overflow-hidden rounded-md">
 							<Image
 								src={getPlaylist.data?.data.images[0].url}
@@ -145,9 +147,9 @@ const Content = (props: ContentProps) => {
 					</div>
 				) : null}
 
-				<h1 className="mt-4 text-center text-3xl font-bold">
+				<h2 className="mt-4 text-center text-2xl font-bold">
 					{getPlaylist.data?.data.name}
-				</h1>
+				</h2>
 
 				{getPlaylist.data?.data.description ? (
 					<p
@@ -208,9 +210,17 @@ const Content = (props: ContentProps) => {
 										onChange={e => setQuery(e.target.value)}
 										className="mt-2 h-10 w-full rounded-md bg-[#292929] px-4"
 										placeholder="Search tags"
+										ref={tagsInputRef}
 									/>
 
-									<Combobox.Options className="mt-2 max-h-60 divide-y divide-gray-800 overflow-y-auto rounded-md">
+									<Combobox.Options
+										className={clsx(
+											'max-h-60 divide-y divide-gray-800 overflow-y-auto rounded-md',
+											{
+												'mt-2 border border-[#3c3c3c]': query && debouncedQuery
+											}
+										)}
+									>
 										{query && debouncedQuery ? (
 											<TagOptions query={debouncedQuery} except={field.value} />
 										) : null}

@@ -162,8 +162,8 @@ const Submit: NextPageWithLayout = () => {
 	}
 
 	return (
-		<main className="mx-auto flex min-h-screen max-w-2xl items-center">
-			<div className="w-full">
+		<>
+			<div className="mx-auto max-w-2xl">
 				<h1 className="text-center text-4xl font-bold text-white">
 					Submit your playlist
 				</h1>
@@ -356,11 +356,11 @@ const Submit: NextPageWithLayout = () => {
 
 											<Combobox.Options
 												className={clsx(
-													'absolute mt-1 max-h-60 w-full divide-y divide-gray-800 overflow-y-auto rounded-md',
+													'absolute max-h-60 w-full divide-y divide-gray-800 overflow-y-auto rounded-md',
 													{
-														'border border-[#3c3c3c]': query && debouncedQuery
-													},
-													{ 'border-0': !query || !debouncedQuery }
+														'mt-2 border border-[#3c3c3c]':
+															query && debouncedQuery
+													}
 												)}
 											>
 												{query && debouncedQuery ? (
@@ -422,7 +422,7 @@ const Submit: NextPageWithLayout = () => {
 					<Toast.Viewport className="fixed bottom-5 right-4" />
 				</Toast.Provider>
 			) : null}
-		</main>
+		</>
 	);
 };
 

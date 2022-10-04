@@ -2,20 +2,18 @@
 import superjson from 'superjson';
 import { createRouter } from './context';
 
-import { exampleRouter } from './example';
 import { mePlaylists } from './me.playlists';
 import { meSubmittedPlaylists } from './me.submittedPlaylists';
-import { playlistsRouter } from './playlists';
 import { playlistsAll } from './playlists.all';
 import { playlistsById } from './playlists.byId';
+import { playlistsCreateRouter } from './playlists.create';
 import { playlistsDelete } from './playlists.delete';
 import { playlistsUpdate } from './playlists.update';
 import { tagsRouter } from './tags';
 
 export const appRouter = createRouter()
 	.transformer(superjson)
-	.merge('example.', exampleRouter)
-	.merge('playlists.', playlistsRouter)
+	.merge(playlistsCreateRouter)
 	.merge(playlistsAll)
 	.merge(playlistsById)
 	.merge(playlistsUpdate)

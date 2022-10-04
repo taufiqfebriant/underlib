@@ -39,7 +39,8 @@ export const playlistsDelete = createProtectedRouter().mutation(
 					}
 				});
 			} catch (e) {
-				console.log('Failed to delete playlist. Exception:', e);
+				console.error('Failed to delete playlist. Exception:', e);
+				throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' });
 			}
 		}
 	}
