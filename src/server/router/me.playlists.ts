@@ -1,9 +1,9 @@
-import { TRPCError } from '@trpc/server';
-import axios, { AxiosResponse } from 'axios';
-import { Session } from 'next-auth';
-import { Paging, SimplifiedPlaylist } from 'spotify-types';
+import type { AxiosResponse } from 'axios';
+import axios from 'axios';
+import type { Session } from 'next-auth';
+import type { Paging, SimplifiedPlaylist } from 'spotify-types';
 import { z } from 'zod';
-import { createRouter } from './context';
+import { createProtectedRouter } from './protected-router';
 
 const input = z.object({
 	limit: z.number().min(1).max(5),
@@ -48,16 +48,12 @@ export type ResponseData = Pick<
 	'id' | 'name' | 'description' | 'images'
 >[];
 
-export const mePlaylists = createRouter().query('me.playlists', {
+export const mePlaylists = createProtectedRouter().query('me.playlists', {
 	input: z.object({
 		limit: z.number().min(1).max(5),
 		cursor: z.number().nullish()
 	}),
 	async resolve({ ctx, input }) {
-		if (!ctx.session) {
-			throw new TRPCError({ code: 'UNAUTHORIZED' });
-		}
-
 		const submittedPlaylists = await ctx.prisma.playlist.findMany({
 			where: {
 				userId: ctx.session.user.id,

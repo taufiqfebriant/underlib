@@ -115,7 +115,7 @@ const Playlists = (props: PlaylistsProps) => {
 
 			{isLoading ? (
 				<div className="mt-4 flex w-full justify-center">
-					<Spinner className="h-6 w-6 fill-white text-[#292929] md:h-8 md:w-8" />
+					<Spinner className="h-6 w-6 fill-white text-[#3c3c3c] md:h-8 md:w-8" />
 				</div>
 			) : null}
 		</>
