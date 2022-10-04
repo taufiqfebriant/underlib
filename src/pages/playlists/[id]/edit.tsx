@@ -2,6 +2,7 @@ import { Combobox } from '@headlessui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as Toast from '@radix-ui/react-toast';
 import clsx from 'clsx';
+import { useSession } from 'next-auth/react';
 import Image from 'next/future/image';
 import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
@@ -76,6 +77,8 @@ type ContentProps = {
 };
 
 const Content = (props: ContentProps) => {
+	const session = useSession();
+
 	const [query, setQuery] = useState('');
 	const debouncedQuery: string = useDebounce<string>(query, 1000);
 	const tagsInputRef = useRef<HTMLInputElement>(null);
@@ -123,6 +126,14 @@ const Content = (props: ContentProps) => {
 				<p className="mt-2 font-medium text-[#989898]">
 					We&apos;re really sorry. Please try to refresh the page.
 				</p>
+			</div>
+		);
+	}
+
+	if (getPlaylist.data?.data.owner.id !== session.data?.user.id) {
+		return (
+			<div className="text-center">
+				<h1 className="text-2xl font-bold">Unauthorized action</h1>
 			</div>
 		);
 	}

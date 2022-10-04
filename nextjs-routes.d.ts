@@ -6,8 +6,6 @@
 declare module "nextjs-routes" {
   export type Route =
     | { pathname: "/api/auth/[...nextauth]"; query: Query<{ "nextauth": string[] }> }
-    | { pathname: "/api/examples"; query?: Query | undefined }
-    | { pathname: "/api/restricted"; query?: Query | undefined }
     | { pathname: "/api/trpc/[trpc]"; query: Query<{ "trpc": string }> }
     | { pathname: "/"; query?: Query | undefined }
     | { pathname: "/me/playlists"; query?: Query | undefined }

@@ -6,9 +6,13 @@ import CustomDialog from './CustomDialog';
 
 type State = Pick<CustomDialogProps, 'isOpen' | 'setIsOpen'>;
 
-export const useSignInDialogStore = create<State>(set => ({
+export const useSignInDialogStore = create<State>((set, get) => ({
 	isOpen: false,
-	setIsOpen: value => set(() => ({ isOpen: value }))
+	setIsOpen: value => {
+		if (get().isOpen !== value) {
+			set({ isOpen: value });
+		}
+	}
 }));
 
 const SignInDialog = () => {
