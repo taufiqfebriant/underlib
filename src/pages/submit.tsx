@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as Toast from '@radix-ui/react-toast';
 import clsx from 'clsx';
 import { useSession } from 'next-auth/react';
-import Image from 'next/image';
+import Image from 'next/future/image';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
@@ -163,7 +163,7 @@ const Content = () => {
 	return (
 		<>
 			<div className="mx-auto max-w-2xl">
-				<h1 className="text-center text-4xl font-bold text-white">
+				<h1 className="text-center text-3xl font-bold text-white lg:text-4xl">
 					Submit your playlist
 				</h1>
 				<p className="mt-4 text-center font-medium text-[#989898]">
@@ -192,11 +192,10 @@ const Content = () => {
 											}
 										}}
 										as="div"
-										className="relative"
 									>
 										{({ open }) => (
 											<>
-												<Listbox.Label className="text-lg">
+												<Listbox.Label className="text-base lg:text-lg">
 													Playlist
 												</Listbox.Label>
 												<p className="text-sm text-[#989898]">
@@ -206,7 +205,7 @@ const Content = () => {
 													<span>{selectedPlaylist?.name}</span>
 													{open ? <FaChevronUp /> : <FaChevronDown />}
 												</Listbox.Button>
-												<Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full divide-y divide-[#3c3c3c] overflow-y-auto rounded-md border border-[#3c3c3c]">
+												<Listbox.Options className="mt-1 max-h-60 divide-y divide-[#3c3c3c] overflow-y-auto rounded-md border border-[#3c3c3c]">
 													{getPlaylists.data?.pages.map((group, i) => (
 														<Fragment key={i}>
 															{group.data.map(playlist => (
@@ -229,15 +228,17 @@ const Content = () => {
 																		>
 																			{playlist.images.length &&
 																			playlist.images[0]?.url ? (
-																				<Image
-																					src={playlist.images[0].url}
-																					alt="Playlist image"
-																					width={48}
-																					height={48}
-																					className="rounded-md object-cover"
-																				/>
+																				<div className="relative h-[48px] w-[48px] shrink-0 overflow-hidden rounded-md">
+																					<Image
+																						src={playlist.images[0].url}
+																						alt="Playlist image"
+																						sizes="100vw"
+																						className="object-cover"
+																						fill={true}
+																					/>
+																				</div>
 																			) : null}
-																			<div>
+																			<div className="overflow-hidden">
 																				<h1 className="block">
 																					{playlist.name}
 																				</h1>
@@ -314,7 +315,9 @@ const Content = () => {
 											as="div"
 											className="relative"
 										>
-											<Combobox.Label className="text-lg">Tags</Combobox.Label>
+											<Combobox.Label className="text-base lg:text-lg">
+												Tags
+											</Combobox.Label>
 
 											<p className="text-sm text-[#989898]">
 												Add some tags that relate to the playlist
@@ -397,7 +400,7 @@ const Content = () => {
 			{/* TODO: Tambah transisi */}
 			{!createPlaylistLoading && createPlaylist.isSuccess ? (
 				<Toast.Provider duration={4000}>
-					<Toast.Root className="rounded-md bg-white px-4 py-3 text-[#151515]">
+					<Toast.Root className="relative rounded-md bg-white px-4 py-3 text-[#151515]">
 						<Toast.Title className="font-medium">Awesome!</Toast.Title>
 						<Toast.Close
 							aria-label="Close"
@@ -410,7 +413,7 @@ const Content = () => {
 						</Toast.Description>
 					</Toast.Root>
 
-					<Toast.Viewport className="fixed bottom-5 right-4" />
+					<Toast.Viewport className="fixed bottom-0 right-0 w-96 max-w-[100vw] p-6" />
 				</Toast.Provider>
 			) : null}
 		</>

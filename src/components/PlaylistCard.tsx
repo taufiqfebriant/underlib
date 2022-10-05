@@ -43,7 +43,7 @@ export const PlaylistCard = (props: Props) => {
 					<p className="mt-[.2rem] flex-1 text-xs text-[#989898] md:mt-1 md:text-sm">
 						{data.owner.display_name}
 					</p>
-					<div className="flex gap-x-2 overflow-y-auto">
+					<div className="flex gap-x-2 overflow-x-auto">
 						{data.tags.map(tag => (
 							<div
 								key={tag.name}

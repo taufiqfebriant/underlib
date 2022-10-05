@@ -58,7 +58,9 @@ const Content = () => {
 
 	return (
 		<>
-			<div className="mt-6 grid grid-cols-1 justify-between gap-y-4 sm:grid-cols-2 sm:gap-x-4 md:grid-cols-[repeat(4,_minmax(0,_200px))] md:gap-y-6 lg:grid-cols-[repeat(5,_minmax(0,_200px))]">
+			<h1 className="text-3xl font-bold lg:text-4xl">My playlist</h1>
+
+			<div className="mt-8 grid grid-cols-1 justify-between gap-y-4 sm:grid-cols-2 sm:gap-x-4 md:grid-cols-[repeat(4,_minmax(0,_200px))] md:gap-y-6 lg:grid-cols-[repeat(5,_minmax(0,_200px))]">
 				{getPlaylists.data?.pages.map((group, i) => (
 					<Fragment key={i}>
 						{group.data.map(playlist => (

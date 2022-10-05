@@ -147,7 +147,9 @@ const Content = (props: ContentProps) => {
 	return (
 		<>
 			<div className="mx-auto max-w-2xl">
-				<h1 className="text-center text-4xl font-bold">Edit playlist</h1>
+				<h1 className="text-center text-3xl font-bold lg:text-4xl">
+					Edit playlist
+				</h1>
 
 				{getPlaylist.data?.data.images[0] ? (
 					<div className="mt-10 flex justify-center">
@@ -164,7 +166,7 @@ const Content = (props: ContentProps) => {
 					</div>
 				) : null}
 
-				<h2 className="mt-4 text-center text-2xl font-bold">
+				<h2 className="mt-4 text-center text-xl font-bold lg:text-2xl">
 					{getPlaylist.data?.data.name}
 				</h2>
 
@@ -198,7 +200,7 @@ const Content = (props: ContentProps) => {
 									}}
 									multiple
 								>
-									<Combobox.Label className="mt-6 inline-block">
+									<Combobox.Label className="mt-6 inline-block text-base lg:text-lg">
 										Tags
 									</Combobox.Label>
 
@@ -275,7 +277,7 @@ const Content = (props: ContentProps) => {
 			</div>
 			{!updatingPlaylist && updatePlaylist.isSuccess ? (
 				<Toast.Provider duration={4000}>
-					<Toast.Root className="rounded-md bg-white px-4 py-3 text-[#151515]">
+					<Toast.Root className="relative rounded-md bg-white px-4 py-3 text-[#151515]">
 						<Toast.Title className="font-medium">Awesome!</Toast.Title>
 						<Toast.Close
 							aria-label="Close"
@@ -288,7 +290,7 @@ const Content = (props: ContentProps) => {
 						</Toast.Description>
 					</Toast.Root>
 
-					<Toast.Viewport className="fixed bottom-5 right-4" />
+					<Toast.Viewport className="fixed bottom-0 right-0 w-96 max-w-[100vw] p-6" />
 				</Toast.Provider>
 			) : null}
 		</>

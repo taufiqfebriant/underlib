@@ -1,4 +1,4 @@
-import { Dialog, Popover } from '@headlessui/react';
+import { Dialog, Menu } from '@headlessui/react';
 import clsx from 'clsx';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import Image from 'next/future/image';
@@ -15,7 +15,6 @@ import {
 	MdPerson,
 	MdQueueMusic
 } from 'react-icons/md';
-import { Container } from './Container';
 import CustomLink from './CustomLink';
 import Spinner from './Spinner';
 
@@ -77,7 +76,7 @@ const Nav = () => {
 					{ 'shadow-none': !scrollPosition && !isOpen }
 				)}
 			>
-				<Container className="relative flex items-center justify-between">
+				<div className="relative mx-auto flex max-w-6xl items-center justify-between px-6 xl:px-0">
 					<div className="bg-white px-4 py-2 font-bold text-[#151515]">
 						diskaver
 					</div>
@@ -110,10 +109,10 @@ const Nav = () => {
 						) : null}
 
 						{session.status !== 'loading' && session.data ? (
-							<Popover as="div" className="relative">
+							<Menu as="div" className="relative">
 								{({ open }) => (
 									<>
-										<Popover.Button
+										<Menu.Button
 											className={clsx(
 												'ml-2 flex items-center gap-x-2 rounded-md px-4 py-2 text-sm font-medium transition-all hover:bg-[#3c3c3c]',
 												{ 'bg-[#292929]': !open },
@@ -126,34 +125,52 @@ const Nav = () => {
 											) : (
 												<MdArrowDropDown className="text-xl" />
 											)}
-										</Popover.Button>
-
-										<Popover.Panel className="absolute right-0 top-12 w-48 overflow-hidden rounded-md bg-[#292929]">
-											<div className="flex flex-col divide-y divide-[#3c3c3c]">
-												<Popover.Button
-													as={Link}
-													href={{ pathname: '/me/playlists' }}
-													passHref
-												>
-													<a className="flex items-center gap-x-2 py-3 px-4 transition-all hover:bg-[#3c3c3c]">
+										</Menu.Button>
+										<Menu.Items
+											className="absolute right-0 top-12 flex w-48 flex-col divide-y divide-[#3c3c3c] overflow-hidden rounded-md bg-[#292929]
+										"
+										>
+											<Menu.Item>
+												{({ active }) => (
+													<CustomLink
+														href={{
+															pathname: '/me/playlists'
+														}}
+														className={clsx(
+															'flex items-center gap-x-2 py-3 px-4 transition-all hover:bg-[#3c3c3c]',
+															{ 'bg-[#3c3c3c]': active },
+															{ 'bg-[#292929]': !active }
+														)}
+													>
 														<MdQueueMusic />
 														<span className="text-sm font-medium">
 															My Playlists
 														</span>
-													</a>
-												</Popover.Button>
-												<Popover.Button
-													onClick={async () => signOut()}
-													className="flex items-center gap-x-2 py-3 px-4 transition-all hover:bg-[#3c3c3c]"
-												>
-													<MdLogout />
-													<span className="text-sm font-medium">Sign out</span>
-												</Popover.Button>
-											</div>
-										</Popover.Panel>
+													</CustomLink>
+												)}
+											</Menu.Item>
+											<Menu.Item>
+												{({ active }) => (
+													<button
+														type="button"
+														className={clsx(
+															'flex w-full items-center gap-x-2 py-3 px-4 transition-all hover:bg-[#3c3c3c]',
+															{ 'bg-[#3c3c3c]': active },
+															{ 'bg-[#292929]': !active }
+														)}
+														onClick={async () => await signOut()}
+													>
+														<MdLogout />
+														<span className="text-sm font-medium">
+															Sign out
+														</span>
+													</button>
+												)}
+											</Menu.Item>
+										</Menu.Items>
 									</>
 								)}
-							</Popover>
+							</Menu>
 						) : null}
 
 						{session.status !== 'loading' && !session.data ? (
@@ -175,7 +192,7 @@ const Nav = () => {
 					>
 						{isOpen ? <MdClose /> : <MdMenu />}
 					</button>
-				</Container>
+				</div>
 			</nav>
 			<Dialog open={isOpen} onClose={() => setIsOpen(false)}>
 				<Dialog.Panel className="fixed top-0 left-0 z-10 h-full w-full bg-[#151515] px-6 pt-28 md:hidden">

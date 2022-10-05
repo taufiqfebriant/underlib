@@ -89,14 +89,14 @@ const Content = (props: ContentProps) => {
 
 	return (
 		<>
-			<div className="flex max-h-[225px] items-center gap-x-8">
+			<div className="flex flex-col lg:max-h-[225px] lg:flex-row lg:items-center lg:gap-x-8">
 				{getPlaylist.data?.data.images[0] ? (
-					<div className="relative h-[225px] w-[225px] overflow-hidden rounded-md">
+					<div className="relative h-[200px] w-[200px] self-center overflow-hidden rounded-md lg:h-[225px] lg:w-[225px]">
 						<Image
 							src={getPlaylist.data?.data.images[0].url}
 							alt="Playlist image"
 							className="h-auto w-full object-cover"
-							sizes="(min-width: 768px) 50vw,
+							sizes="(min-width: 1024px) 50vw,
 							100vw"
 							fill={true}
 						/>
@@ -104,55 +104,114 @@ const Content = (props: ContentProps) => {
 				) : null}
 
 				<div className="flex-1">
-					<h1 className="text-5xl font-bold">{getPlaylist.data?.data.name}</h1>
+					<h1 className="mt-4 text-center text-2xl font-bold lg:text-left lg:text-5xl">
+						{getPlaylist.data?.data.name}
+					</h1>
 
 					{getPlaylist.data?.data.description ? (
 						<p
-							className="mt-2 text-[#989898]"
+							className="mt-2 text-sm text-[#989898] lg:text-base"
 							dangerouslySetInnerHTML={{
 								__html: getPlaylist.data?.data.description
 							}}
 						/>
 					) : null}
 
-					<div className="mt-4 flex gap-x-2">
+					<div className="mt-4 flex gap-x-2 overflow-x-auto">
 						{getPlaylist.data?.data.tags.map(tag => (
 							<div
 								key={tag.name}
-								className="whitespace-nowrap rounded-md bg-[#292929] px-2 py-1 text-sm"
+								className="whitespace-nowrap rounded-md bg-[#292929] px-2 py-1 text-xs lg:text-sm"
 							>
 								{tag.name}
 							</div>
 						))}
 					</div>
 
-					<div className="mt-8 flex items-center gap-x-2">
-						{getPlaylist.data?.data.owner.images?.length &&
-						getPlaylist.data.data.owner.images[0]?.url ? (
-							<Image
-								src={getPlaylist.data.data.owner.images[0]?.url}
-								alt={
-									getPlaylist.data.data.owner.display_name ??
-									getPlaylist.data.data.owner.id
-								}
-								width={32}
-								height={32}
-								className="rounded-full"
-							/>
-						) : (
-							<div className="rounded-full bg-[#292929] p-1 text-2xl">
-								<MdPerson />
-							</div>
-						)}
-						<p>{getPlaylist.data?.data.owner.display_name}</p>
+					<div className="mt-6 flex items-center justify-between lg:mt-8">
+						<div className="flex items-center gap-x-2">
+							{getPlaylist.data?.data.owner.images?.length &&
+							getPlaylist.data.data.owner.images[0]?.url ? (
+								<Image
+									src={getPlaylist.data.data.owner.images[0]?.url}
+									alt={
+										getPlaylist.data.data.owner.display_name ??
+										getPlaylist.data.data.owner.id
+									}
+									width={32}
+									height={32}
+									className="rounded-full"
+								/>
+							) : (
+								<div className="rounded-full bg-[#292929] p-1 text-2xl">
+									<MdPerson />
+								</div>
+							)}
+							<p className="text-sm lg:text-base">
+								{getPlaylist.data?.data.owner.display_name}
+							</p>
+						</div>
+
+						{session.data?.user.id === getPlaylist.data?.data.owner.id ? (
+							<Menu as="div" className="relative lg:hidden">
+								{({ open }) => (
+									<>
+										<Menu.Button
+											className={clsx(
+												'rounded-md p-2 text-lg transition-colors hover:bg-[#292929] lg:text-2xl',
+												{ 'bg-[#292929]': open }
+											)}
+										>
+											<FaEllipsisH />
+										</Menu.Button>
+										<Menu.Items className="absolute top-12 right-0 flex w-40 flex-col divide-y divide-[#3c3c3c] overflow-hidden rounded-md border border-[#3c3c3c] text-sm lg:text-base">
+											<Menu.Item>
+												{({ active }) => (
+													<CustomLink
+														href={{
+															pathname: '/playlists/[id]/edit',
+															query: { id: props.id }
+														}}
+														className={clsx(
+															'px-4 py-2',
+															{ 'bg-[#3c3c3c]': active },
+															{ 'bg-[#292929]': !active }
+														)}
+													>
+														Edit playlist
+													</CustomLink>
+												)}
+											</Menu.Item>
+											<Menu.Item>
+												{({ active }) => (
+													<button
+														type="button"
+														onClick={() => setIsOpen(true)}
+														className={clsx(
+															'px-4 py-2 text-left text-red-500',
+															{ 'bg-[#3c3c3c]': active },
+															{ 'bg-[#292929]': !active }
+														)}
+													>
+														Delete
+													</button>
+												)}
+											</Menu.Item>
+										</Menu.Items>
+									</>
+								)}
+							</Menu>
+						) : null}
 					</div>
 				</div>
 			</div>
-			<div className="mt-6 flex items-center gap-x-6">
-				<p className="flex-1">{getPlaylist.data?.data.tracks.total} songs</p>
+			<div className="mt-6 flex items-center justify-center gap-x-6">
+				<p className="hidden flex-1 lg:block">
+					{getPlaylist.data?.data.tracks.total} songs
+				</p>
 
 				{session.data?.user.id === getPlaylist.data?.data.owner.id ? (
-					<Menu as="div" className="relative">
+					<Menu as="div" className="relative hidden lg:block">
 						{({ open }) => (
 							<>
 								<Menu.Button
@@ -219,12 +278,14 @@ const Content = (props: ContentProps) => {
 				{getPlaylist.data?.data.tracks.items.map((item, index) => (
 					<div
 						key={item.track?.id}
-						className="flex h-16 items-center gap-x-6 rounded-md px-4 transition-colors hover:bg-[#292929]"
+						className="flex h-[4.5rem] items-center gap-x-6 rounded-md px-0 transition-colors lg:h-16 lg:px-4 lg:hover:bg-[#292929]"
 					>
-						<p className="w-4 font-medium text-[#989898]">{index + 1}</p>
+						<p className="hidden w-4 font-medium text-[#989898] lg:block">
+							{index + 1}
+						</p>
 						<div>
-							<h1>{item.track?.name}</h1>
-							<p className="text-sm text-[#989898]">
+							<h1 className="text-sm lg:text-base">{item.track?.name}</h1>
+							<p className="text-xs text-[#989898] lg:text-sm">
 								{item.track?.artists.flatMap(artist => artist.name).join(', ')}
 							</p>
 						</div>
@@ -236,7 +297,7 @@ const Content = (props: ContentProps) => {
 				isOpen={isOpen}
 				setIsOpen={setIsOpen}
 			>
-				<p>
+				<p className="text-sm md:text-base">
 					Are you sure want to delete the playlist from this site?{' '}
 					<span className="text-[#989898]">
 						(Don&apos;t worry, your original playlist will not be deleted)

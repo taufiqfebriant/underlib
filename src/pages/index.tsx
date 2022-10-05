@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { MdClose, MdFilterAlt, MdOutlineArrowDownward } from 'react-icons/md';
 import { useInView } from 'react-intersection-observer';
-import { Container } from '../components/Container';
 import CustomDialog from '../components/CustomDialog';
 import CustomLink from '../components/CustomLink';
 import { getLayout } from '../components/Layout';
@@ -167,62 +166,60 @@ const Home: NextPageWithLayout = () => {
 
 	return (
 		<>
-			<Container>
-				<div className="mt-32 mb-20 md:mt-28">
-					<h1 className="flex h-full flex-col gap-y-2 text-center text-6xl font-bold md:text-8xl">
-						<span className="text-white">Moods.</span>
-						<span className="text-white">Moments.</span>
-						<span className="bg-gradient-to-r from-[#739a77] to-[#1ed760] bg-clip-text pb-2 text-transparent">
-							Playlists.
-						</span>
-					</h1>
-					<p className="mx-auto mt-4 max-w-lg text-center text-lg text-[#989898] md:max-w-2xl lg:max-w-3xl">
-						Most of the Spotify playlists have cool names which make them hard
-						to find. Tags allow you to discover them easily based on your
-						current mood or moment.
-					</p>
-					<div className="mt-8 flex flex-col items-center gap-y-4 md:flex-row md:justify-center md:gap-x-4">
-						<button
-							type="button"
-							className="flex items-center justify-center gap-x-2 rounded-md bg-white px-4 py-2 font-medium text-[#151515] transition-colors hover:bg-gray-200"
-							onClick={() => {
-								playlistsSectionRef.current?.scrollIntoView({
-									behavior: 'smooth'
-								});
-							}}
-						>
-							<span>Discover now</span>
-							<MdOutlineArrowDownward />
-						</button>
-						<CustomLink
-							href={{ pathname: '/submit' }}
-							protectedRoute
-							className="rounded-md bg-[#292929] px-4 py-2 font-medium transition-colors hover:bg-[#3c3c3c]"
-						>
-							Submit your playlist
-						</CustomLink>
-					</div>
-				</div>
-
-				<div className="mb-10 scroll-mt-24" ref={playlistsSectionRef}>
-					<div
-						className="flex items-center justify-between bg-[#151515]"
-						ref={playlistsHeaderRef}
+			<div className="mt-32 mb-20 md:mt-28">
+				<h1 className="flex h-full flex-col gap-y-2 text-center text-6xl font-bold md:text-8xl">
+					<span className="text-white">Moods.</span>
+					<span className="text-white">Moments.</span>
+					<span className="bg-gradient-to-r from-[#739a77] to-[#1ed760] bg-clip-text pb-2 text-transparent">
+						Playlists.
+					</span>
+				</h1>
+				<p className="mx-auto mt-4 max-w-lg text-center text-lg text-[#989898] md:max-w-2xl lg:max-w-3xl">
+					Most of the Spotify playlists have cool names which make them hard to
+					find. Tags allow you to discover them easily based on your current
+					mood or moment.
+				</p>
+				<div className="mt-8 flex flex-col items-center gap-y-4 md:flex-row md:justify-center md:gap-x-4">
+					<button
+						type="button"
+						className="flex items-center justify-center gap-x-2 rounded-md bg-white px-4 py-2 font-medium text-[#151515] transition-colors hover:bg-gray-200"
+						onClick={() => {
+							playlistsSectionRef.current?.scrollIntoView({
+								behavior: 'smooth'
+							});
+						}}
 					>
-						<h1 className="text-2xl font-bold sm:text-3xl">All playlists</h1>
-						<button
-							type="button"
-							className="flex items-center gap-x-2 rounded-md bg-[#292929] px-4 py-2 transition-colors hover:bg-[#3c3c3c]"
-							onClick={() => setIsOpen(true)}
-						>
-							<span className="text-sm font-medium">Filter</span>
-							<MdFilterAlt />
-						</button>
-					</div>
-
-					<Playlists tags={selectedTags} />
+						<span>Discover now</span>
+						<MdOutlineArrowDownward />
+					</button>
+					<CustomLink
+						href={{ pathname: '/submit' }}
+						protectedRoute
+						className="rounded-md bg-[#292929] px-4 py-2 font-medium transition-colors hover:bg-[#3c3c3c]"
+					>
+						Submit your playlist
+					</CustomLink>
 				</div>
-			</Container>
+			</div>
+
+			<div className="mb-10 scroll-mt-24" ref={playlistsSectionRef}>
+				<div
+					className="flex items-center justify-between bg-[#151515]"
+					ref={playlistsHeaderRef}
+				>
+					<h1 className="text-2xl font-bold sm:text-3xl">All playlists</h1>
+					<button
+						type="button"
+						className="flex items-center gap-x-2 rounded-md bg-[#292929] px-4 py-2 transition-colors hover:bg-[#3c3c3c]"
+						onClick={() => setIsOpen(true)}
+					>
+						<span className="text-sm font-medium">Filter</span>
+						<MdFilterAlt />
+					</button>
+				</div>
+
+				<Playlists tags={selectedTags} />
+			</div>
 			<motion.div
 				className="fixed top-0 left-0 w-full bg-[#151515] shadow-sm shadow-[#3c3c3c]"
 				animate={isPassingPlaylistsHeader ? 'open' : 'closed'}
@@ -239,7 +236,7 @@ const Home: NextPageWithLayout = () => {
 					}
 				}}
 			>
-				<Container className="flex items-center justify-between py-3">
+				<div className="flex items-center justify-between py-3">
 					<h1 className="text-2xl font-bold sm:text-3xl">All playlists</h1>
 					<button
 						type="button"
@@ -249,7 +246,7 @@ const Home: NextPageWithLayout = () => {
 						<span className="text-sm font-medium">Filter</span>
 						<MdFilterAlt />
 					</button>
-				</Container>
+				</div>
 			</motion.div>
 			<CustomDialog
 				title="Filter"
