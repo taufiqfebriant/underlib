@@ -188,18 +188,18 @@ You can also use docker-compose to build and run the container.
    <summary>docker-compose.yml</summary>
 
    ```yaml
-   version: "3.7"
+   version: '3.7'
    services:
      app:
-       platform: "linux/amd64"
+       platform: 'linux/amd64'
        build:
          context: .
          dockerfile: Dockerfile
          args:
-           NEXT_PUBLIC_FOO: "foo"
+           NEXT_PUBLIC_FOO: 'foo'
        working_dir: /app
        ports:
-         - "3000:3000"
+         - '3000:3000'
        image: t3-app
        environment:
          - BAR=bar
