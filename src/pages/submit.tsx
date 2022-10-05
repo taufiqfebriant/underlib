@@ -8,12 +8,12 @@ import { Fragment, useEffect, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { MdClose } from 'react-icons/md';
-import { z } from 'zod';
+import type { z } from 'zod';
 import { getLayout } from '../components/Layout';
 import { useSignInDialogStore } from '../components/SignInDialog';
 import Spinner from '../components/Spinner';
-import { useDebounce } from '../hooks/use-debounce';
-import type { ResponseData } from '../server/router/me.playlists';
+import { playlistsCreateSchema } from '../schema/playlists.schema';
+import type { inferQueryOutput } from '../utils/trpc';
 import { trpc } from '../utils/trpc';
 import type { NextPageWithLayout } from './_app';
 
@@ -46,17 +46,19 @@ const TagOptions = (props: TagOptionsProps) => {
 
 	if (isNew) {
 		return (
-			<Combobox.Option
-				value={props.query}
-				className={`${defaultClasses} transition-colors hover:bg-[#3c3c3c]`}
-			>
-				Create &quot;{props.query}&quot;
-			</Combobox.Option>
+			<Combobox.Options className="absolute mt-2 max-h-60 w-full divide-y divide-gray-800 overflow-y-auto rounded-md border border-[#3c3c3c]">
+				<Combobox.Option
+					value={props.query}
+					className={`${defaultClasses} transition-colors hover:bg-[#3c3c3c]`}
+				>
+					Create &quot;{props.query}&quot;
+				</Combobox.Option>
+			</Combobox.Options>
 		);
 	}
 
 	return (
-		<>
+		<Combobox.Options className="absolute mt-2 max-h-60 w-full divide-y divide-gray-800 overflow-y-auto rounded-md border border-[#3c3c3c]">
 			{getTags.data?.data.map(tag => (
 				<Combobox.Option
 					key={tag}
@@ -66,42 +68,37 @@ const TagOptions = (props: TagOptionsProps) => {
 					{tag}
 				</Combobox.Option>
 			))}
-		</>
+		</Combobox.Options>
 	);
 };
 
-const createPlaylistInput = z.object({
-	id: z
-		.string({
-			required_error: 'You must pick one of your playlists'
-		})
-		.min(1, { message: 'You must pick one of your playlists' }),
-	tags: z
-		.array(z.string(), {
-			required_error: 'You must include at least one tag'
-		})
-		.min(1, { message: 'You must include at least one tag' })
-});
+type Schema = z.infer<typeof playlistsCreateSchema>;
 
-type Schema = z.infer<typeof createPlaylistInput>;
+type Playlist = inferQueryOutput<'me.playlists'>['data'][number];
 
 const Content = () => {
 	const getPlaylists = trpc.useInfiniteQuery(['me.playlists', { limit: 5 }], {
 		getNextPageParam: lastPage => lastPage.cursor ?? undefined
 	});
 
-	const [selectedPlaylist, setSelectedPlaylist] = useState<
-		ResponseData[number] | null
-	>(null);
+	const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(
+		null
+	);
 
 	const [query, setQuery] = useState('');
-	const debouncedQuery: string = useDebounce<string>(query, 1000);
+	const [debouncedQuery, setDebouncedQuery] = useState(query);
 	const tagsInputRef = useRef<HTMLInputElement>(null);
+
+	useEffect(() => {
+		const handler = setTimeout(() => setDebouncedQuery(query), 1000);
+
+		return () => clearTimeout(handler);
+	}, [query]);
 
 	const createPlaylist = trpc.useMutation('playlists.create');
 
 	const form = useForm<Schema>({
-		resolver: zodResolver(createPlaylistInput)
+		resolver: zodResolver(playlistsCreateSchema)
 	});
 
 	const createPlaylistLoading =
@@ -121,7 +118,7 @@ const Content = () => {
 	if (getPlaylists.isLoading) {
 		return (
 			<div className="flex justify-center">
-				<Spinner className="h-6 w-6 fill-white text-[#292929] md:h-8 md:w-8" />
+				<Spinner className="h-6 w-6 fill-white text-[#3c3c3c] md:h-8 md:w-8" />
 			</div>
 		);
 	}
@@ -259,6 +256,7 @@ const Content = () => {
 															))}
 														</Fragment>
 													))}
+
 													{getPlaylists.hasNextPage ? (
 														<li className="flex h-20 items-center justify-center bg-[#292929]">
 															{getPlaylists.isFetchingNextPage ? (
@@ -305,6 +303,7 @@ const Content = () => {
 											onChange={tag => {
 												field.onChange(tag);
 												setQuery('');
+												setDebouncedQuery('');
 
 												if (tagsInputRef.current) {
 													tagsInputRef.current.value = '';
@@ -353,25 +352,15 @@ const Content = () => {
 												onChange={e => setQuery(e.target.value)}
 												className="mt-2 flex h-10 w-full items-center justify-between rounded-md bg-[#292929] px-4 focus:outline-none"
 												ref={tagsInputRef}
-												placeholder="Chill, Happy, Young, etc."
+												placeholder="Search tags"
 											/>
 
-											<Combobox.Options
-												className={clsx(
-													'absolute max-h-60 w-full divide-y divide-gray-800 overflow-y-auto rounded-md',
-													{
-														'mt-2 border border-[#3c3c3c]':
-															query && debouncedQuery
-													}
-												)}
-											>
-												{query && debouncedQuery ? (
-													<TagOptions
-														query={debouncedQuery}
-														except={form.getValues('tags')}
-													/>
-												) : null}
-											</Combobox.Options>
+											{query && debouncedQuery ? (
+												<TagOptions
+													query={debouncedQuery}
+													except={form.getValues('tags')}
+												/>
+											) : null}
 										</Combobox>
 										{formState.errors.tags?.message ? (
 											<p className="mt-2 text-red-600">

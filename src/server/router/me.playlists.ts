@@ -1,7 +1,7 @@
+/// <reference types="spotify-api">
 import type { AxiosResponse } from 'axios';
 import axios from 'axios';
 import type { Session } from 'next-auth';
-import type { Paging, SimplifiedPlaylist } from 'spotify-types';
 import { z } from 'zod';
 import { createProtectedRouter } from './protected-router';
 
@@ -28,31 +28,21 @@ const getSpotifyPlaylists = async (params: GetSpotifyPlaylistsParams) => {
 		requestParams.offset = params.offset;
 	}
 
-	const response: AxiosResponse<Paging<SimplifiedPlaylist>> = await axios.get(
-		'https://api.spotify.com/v1/me/playlists',
-		{
+	const response: AxiosResponse<SpotifyApi.ListOfCurrentUsersPlaylistsResponse> =
+		await axios.get('https://api.spotify.com/v1/me/playlists', {
 			headers: {
 				Accept: 'application/json',
 				'Content-Type': 'application/json',
 				Authorization: `Bearer ${params.accessToken}`
 			},
 			params: requestParams
-		}
-	);
+		});
 
 	return response;
 };
 
-export type ResponseData = Pick<
-	SimplifiedPlaylist,
-	'id' | 'name' | 'description' | 'images'
->[];
-
 export const mePlaylists = createProtectedRouter().query('me.playlists', {
-	input: z.object({
-		limit: z.number().min(1).max(5),
-		cursor: z.number().nullish()
-	}),
+	input,
 	async resolve({ ctx, input }) {
 		const submittedPlaylists = await ctx.prisma.playlist.findMany({
 			where: {
@@ -78,10 +68,14 @@ export const mePlaylists = createProtectedRouter().query('me.playlists', {
 			getSpotifyPlaylistsParams.offset = input.cursor;
 		}
 
-		let totalRequests = 1;
 		let cursor: number | null = null;
 
-		const data: ResponseData = [];
+		const data: Pick<
+			SpotifyApi.PlaylistObjectSimplified,
+			'id' | 'name' | 'description' | 'images'
+		>[] = [];
+
+		let totalRequests = 1;
 		while (data.length < input.limit) {
 			const getSpotifyPlaylistsResponse = await getSpotifyPlaylists(
 				getSpotifyPlaylistsParams
@@ -89,7 +83,7 @@ export const mePlaylists = createProtectedRouter().query('me.playlists', {
 
 			const items = getSpotifyPlaylistsResponse.data.items;
 
-			let playlists = items
+			const playlists = items
 				.filter(playlist => {
 					if (submittedPlaylistIds.includes(playlist.id)) {
 						return false;
@@ -101,44 +95,57 @@ export const mePlaylists = createProtectedRouter().query('me.playlists', {
 
 					return true;
 				})
-				.map(({ id, name, description, images }) => ({
-					id,
-					name,
-					description,
-					images
+				.map(playlist => ({
+					id: playlist.id,
+					name: playlist.name,
+					description: playlist.description,
+					images: playlist.images
 				}));
 
-			const next = getSpotifyPlaylistsResponse.data.next as string | null;
-
-			if (
-				!next &&
-				totalRequests > 1 &&
-				data.length + playlists.length > input.limit
-			) {
-				playlists = playlists.slice(undefined, input.limit - data.length);
-
-				playlists.forEach((playlist, index) => {
-					if (playlist.id === playlists[playlists.length - 1]?.id) {
-						cursor = index + 1;
-						if (totalRequests > 1) {
-							cursor += input.limit;
-						}
-					}
-				});
+			let strOffset: string | null = null;
+			const next = getSpotifyPlaylistsResponse.data.next;
+			if (next) {
+				strOffset = new URL(next).searchParams.get('offset');
 			}
 
-			data.push(...playlists);
+			let offset: number | null = null;
+			if (strOffset) {
+				offset = parseInt(strOffset);
+			}
 
-			if (!next) {
+			if (offset && data.length + playlists.length < input.limit) {
+				data.push(...playlists);
+				getSpotifyPlaylistsParams.offset = offset;
+
+				totalRequests++;
+				continue;
+			}
+
+			const slicedPlaylists = playlists.slice(
+				undefined,
+				input.limit - data.length
+			);
+
+			data.push(...slicedPlaylists);
+
+			const totalRemainingPlaylists = playlists.length - slicedPlaylists.length;
+			if (!offset && !totalRemainingPlaylists) {
 				break;
 			}
 
-			const offset = new URL(next).searchParams.get('offset');
-			if (offset) {
-				getSpotifyPlaylistsParams.offset = parseInt(offset);
-			}
+			const lastPlaylist = slicedPlaylists[slicedPlaylists.length - 1];
+			items.forEach((item, index) => {
+				if (item.id !== lastPlaylist?.id) return;
 
-			totalRequests++;
+				cursor = index + 1;
+				if (totalRequests > 1) {
+					cursor += input.limit;
+				}
+
+				if (totalRequests > 1 && input.cursor) {
+					cursor += input.cursor;
+				}
+			});
 		}
 
 		return { data, cursor };

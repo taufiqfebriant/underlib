@@ -10,7 +10,6 @@ import CustomLink from '../components/CustomLink';
 import { getLayout } from '../components/Layout';
 import { PlaylistCard } from '../components/PlaylistCard';
 import Spinner from '../components/Spinner';
-import { useDebounce } from '../hooks/use-debounce';
 import { trpc } from '../utils/trpc';
 import type { NextPageWithLayout } from './_app';
 
@@ -124,11 +123,18 @@ const Playlists = (props: PlaylistsProps) => {
 
 const Home: NextPageWithLayout = () => {
 	const playlistsSectionRef = useRef<HTMLDivElement>(null);
-	const [query, setQuery] = useState('');
 	const [selectedTags, setSelectedTags] = useState<string[]>([]);
-	const debouncedQuery: string = useDebounce<string>(query, 1000);
 	const [isOpen, setIsOpen] = useState(false);
+
+	const [query, setQuery] = useState('');
+	const [debouncedQuery, setDebouncedQuery] = useState(query);
 	const tagsInputRef = useRef<HTMLInputElement>(null);
+
+	useEffect(() => {
+		const handler = setTimeout(() => setDebouncedQuery(query), 1000);
+
+		return () => clearTimeout(handler);
+	}, [query]);
 
 	const [isPassingPlaylistsHeader, setIsPassingPlaylistsHeader] =
 		useState(false);
@@ -189,7 +195,7 @@ const Home: NextPageWithLayout = () => {
 							<MdOutlineArrowDownward />
 						</button>
 						<CustomLink
-							href="/submit"
+							href={{ pathname: '/submit' }}
 							protectedRoute
 							className="rounded-md bg-[#292929] px-4 py-2 font-medium transition-colors hover:bg-[#3c3c3c]"
 						>
@@ -256,6 +262,7 @@ const Home: NextPageWithLayout = () => {
 					onChange={tags => {
 						setSelectedTags(tags);
 						setQuery('');
+						setDebouncedQuery('');
 
 						if (tagsInputRef.current) {
 							tagsInputRef.current.value = '';

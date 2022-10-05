@@ -2,25 +2,14 @@
 import { TRPCError } from '@trpc/server';
 import type { AxiosResponse } from 'axios';
 import axios, { AxiosError } from 'axios';
-import { z } from 'zod';
+import { playlistsCreateSchema } from '../../schema/playlists.schema';
 import { customNanoId } from '../../utils/nanoid';
 import { createProtectedRouter } from './protected-router';
 
 export const playlistsCreateRouter = createProtectedRouter().mutation(
 	'playlists.create',
 	{
-		input: z.object({
-			id: z
-				.string({
-					required_error: 'You must select one of your playlist'
-				})
-				.min(1, { message: 'You must select one of your playlist' }),
-			tags: z
-				.array(z.string(), {
-					required_error: 'You must include at least one tag'
-				})
-				.min(1, { message: 'You must include at least one tag' })
-		}),
+		input: playlistsCreateSchema,
 		async resolve({ ctx, input }) {
 			let response: AxiosResponse<{
 				owner: Pick<SpotifyApi.SinglePlaylistResponse['owner'], 'id'>;

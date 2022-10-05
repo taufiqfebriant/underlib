@@ -12,7 +12,6 @@ import { z } from 'zod';
 import { getLayout } from '../../../components/Layout';
 import { useSignInDialogStore } from '../../../components/SignInDialog';
 import Spinner from '../../../components/Spinner';
-import { useDebounce } from '../../../hooks/use-debounce';
 import { trpc } from '../../../utils/trpc';
 import type { NextPageWithLayout } from '../../_app';
 
@@ -81,8 +80,14 @@ const Content = (props: ContentProps) => {
 	const session = useSession();
 
 	const [query, setQuery] = useState('');
-	const debouncedQuery: string = useDebounce<string>(query, 1000);
+	const [debouncedQuery, setDebouncedQuery] = useState(query);
 	const tagsInputRef = useRef<HTMLInputElement>(null);
+
+	useEffect(() => {
+		const handler = setTimeout(() => setDebouncedQuery(query), 1000);
+
+		return () => clearTimeout(handler);
+	}, [query]);
 
 	const getPlaylist = trpc.useQuery(['playlists.byId', { id: props.id }]);
 	const updatePlaylist = trpc.useMutation('playlists.update');
@@ -184,6 +189,7 @@ const Content = (props: ContentProps) => {
 									onChange={tags => {
 										field.onChange(tags);
 										setQuery('');
+										setDebouncedQuery('');
 
 										if (tagsInputRef.current) {
 											tagsInputRef.current.value = '';
