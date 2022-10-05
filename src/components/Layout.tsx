@@ -1,45 +1,17 @@
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/router';
-import type { Route } from 'nextjs-routes';
 import type { ReactNode } from 'react';
-import { useEffect, useState } from 'react';
 import Nav from './Nav';
-import SignInDialog, { useSignInDialogStore } from './SignInDialog';
+import SignInDialog from './SignInDialog';
 
 type Props = {
 	children: ReactNode;
 };
 
 const Layout = (props: Props) => {
-	const router = useRouter();
-	const session = useSession();
-	const signInDialogStore = useSignInDialogStore();
-	const [showChildren, setShowChildren] = useState(true);
-	const [isInitialRender, setIsInitialRender] = useState(true);
-
-	useEffect(() => {
-		const protectedRoutes: Array<Route['pathname']> = [
-			'/submit',
-			'/playlists/[id]/edit',
-			'/me/playlists'
-		];
-
-		if (
-			session.status === 'unauthenticated' &&
-			protectedRoutes.includes(router.pathname) &&
-			isInitialRender
-		) {
-			setIsInitialRender(false);
-			setShowChildren(false);
-			signInDialogStore.setIsOpen(true);
-		}
-	}, [router.pathname, session.status, signInDialogStore, isInitialRender]);
-
 	return (
 		<>
 			<Nav />
 			<main className="mx-auto mt-32 mb-10 max-w-6xl md:mt-28">
-				{showChildren ? props.children : null}
+				{props.children}
 			</main>
 			<SignInDialog />
 		</>

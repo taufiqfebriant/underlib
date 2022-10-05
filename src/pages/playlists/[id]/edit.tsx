@@ -10,6 +10,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { MdClose } from 'react-icons/md';
 import { z } from 'zod';
 import { getLayout } from '../../../components/Layout';
+import { useSignInDialogStore } from '../../../components/SignInDialog';
 import Spinner from '../../../components/Spinner';
 import { useDebounce } from '../../../hooks/use-debounce';
 import { trpc } from '../../../utils/trpc';
@@ -288,16 +289,39 @@ const Content = (props: ContentProps) => {
 	);
 };
 
-// TODO: redirect ke beranda jika belum login atau pengguna bukan pemilik playlist
 const EditPlaylist: NextPageWithLayout = () => {
 	const router = useRouter<'/playlists/[id]/edit'>();
 	const [id, setId] = useState<string>();
+	const session = useSession();
+	const signInDialogStore = useSignInDialogStore();
+	const [isInitialRender, setIsInitialRender] = useState(true);
+
+	useEffect(() => {
+		if (session.status === 'loading') return;
+
+		if (session.status === 'unauthenticated' && isInitialRender) {
+			setIsInitialRender(false);
+			signInDialogStore.setIsOpen(true);
+		}
+	}, [isInitialRender, session.status, signInDialogStore]);
 
 	useEffect(() => {
 		if (router.isReady && !id) {
 			setId(router.query.id);
 		}
 	}, [id, router.isReady, router.query.id]);
+
+	if (session.status === 'loading') {
+		return (
+			<div className="flex justify-center">
+				<Spinner className="h-6 w-6 fill-white text-[#292929] md:h-8 md:w-8" />
+			</div>
+		);
+	}
+
+	if (session.status === 'unauthenticated') {
+		return null;
+	}
 
 	return id ? <Content id={id} /> : null;
 };

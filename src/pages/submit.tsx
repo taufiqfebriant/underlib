@@ -2,13 +2,15 @@ import { Combobox, Listbox } from '@headlessui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as Toast from '@radix-ui/react-toast';
 import clsx from 'clsx';
+import { useSession } from 'next-auth/react';
 import Image from 'next/image';
-import { Fragment, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { MdClose } from 'react-icons/md';
 import { z } from 'zod';
 import { getLayout } from '../components/Layout';
+import { useSignInDialogStore } from '../components/SignInDialog';
 import Spinner from '../components/Spinner';
 import { useDebounce } from '../hooks/use-debounce';
 import type { ResponseData } from '../server/router/me.playlists';
@@ -83,7 +85,7 @@ const createPlaylistInput = z.object({
 
 type Schema = z.infer<typeof createPlaylistInput>;
 
-const Submit: NextPageWithLayout = () => {
+const Content = () => {
 	const getPlaylists = trpc.useInfiniteQuery(['me.playlists', { limit: 5 }], {
 		getNextPageParam: lastPage => lastPage.cursor ?? undefined
 	});
@@ -424,6 +426,35 @@ const Submit: NextPageWithLayout = () => {
 			) : null}
 		</>
 	);
+};
+
+const Submit: NextPageWithLayout = () => {
+	const session = useSession();
+	const signInDialogStore = useSignInDialogStore();
+	const [isInitialRender, setIsInitialRender] = useState(true);
+
+	useEffect(() => {
+		if (session.status === 'loading') return;
+
+		if (session.status === 'unauthenticated' && isInitialRender) {
+			setIsInitialRender(false);
+			signInDialogStore.setIsOpen(true);
+		}
+	}, [isInitialRender, session.status, signInDialogStore]);
+
+	if (session.status === 'loading') {
+		return (
+			<div className="flex justify-center">
+				<Spinner className="h-6 w-6 fill-white text-[#292929] md:h-8 md:w-8" />
+			</div>
+		);
+	}
+
+	if (session.status === 'unauthenticated') {
+		return null;
+	}
+
+	return <Content />;
 };
 
 Submit.getLayout = getLayout;

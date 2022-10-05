@@ -1,18 +1,21 @@
-import { Fragment, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { Fragment, useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { getLayout } from '../../components/Layout';
 import { PlaylistCard } from '../../components/PlaylistCard';
+import { useSignInDialogStore } from '../../components/SignInDialog';
 import Spinner from '../../components/Spinner';
 import { trpc } from '../../utils/trpc';
 import type { NextPageWithLayout } from '../_app';
 
-const MyPlaylists: NextPageWithLayout = () => {
+const Content = () => {
 	const getPlaylists = trpc.useInfiniteQuery(
 		['me.submittedPlaylists', { limit: 10 }],
 		{
 			getNextPageParam: lastPage => lastPage.cursor ?? undefined
 		}
 	);
+
 	const isLoading = getPlaylists.isLoading || getPlaylists.isFetchingNextPage;
 
 	const inView = useInView({
@@ -47,7 +50,7 @@ const MyPlaylists: NextPageWithLayout = () => {
 			<div className="w-full text-center">
 				<h1 className="text-2xl font-bold">No playlists found</h1>
 				<p className="mt-2 font-medium text-[#989898]">
-					We couldn&apos;t find what you searched for. Try search again.
+					You haven&apos;t submit any playlist yet.
 				</p>
 			</div>
 		);
@@ -76,6 +79,35 @@ const MyPlaylists: NextPageWithLayout = () => {
 			) : null}
 		</>
 	);
+};
+
+const MyPlaylists: NextPageWithLayout = () => {
+	const session = useSession();
+	const signInDialogStore = useSignInDialogStore();
+	const [isInitialRender, setIsInitialRender] = useState(true);
+
+	useEffect(() => {
+		if (session.status === 'loading') return;
+
+		if (session.status === 'unauthenticated' && isInitialRender) {
+			setIsInitialRender(false);
+			signInDialogStore.setIsOpen(true);
+		}
+	}, [isInitialRender, session.status, signInDialogStore]);
+
+	if (session.status === 'loading') {
+		return (
+			<div className="flex justify-center">
+				<Spinner className="h-6 w-6 fill-white text-[#292929] md:h-8 md:w-8" />
+			</div>
+		);
+	}
+
+	if (session.status === 'unauthenticated') {
+		return null;
+	}
+
+	return <Content />;
 };
 
 MyPlaylists.getLayout = getLayout;
