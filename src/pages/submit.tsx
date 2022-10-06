@@ -4,6 +4,8 @@ import * as Toast from '@radix-ui/react-toast';
 import clsx from 'clsx';
 import { useSession } from 'next-auth/react';
 import Image from 'next/future/image';
+import Head from 'next/head';
+import type { ReactNode } from 'react';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
@@ -12,10 +14,17 @@ import type { z } from 'zod';
 import { getLayout } from '../components/Layout';
 import { useSignInDialogStore } from '../components/SignInDialog';
 import Spinner from '../components/Spinner';
+import { appName } from '../constants/general';
 import { playlistsCreateSchema } from '../schema/playlists.schema';
 import type { inferQueryOutput } from '../utils/trpc';
 import { trpc } from '../utils/trpc';
 import type { NextPageWithLayout } from './_app';
+
+const meta = {
+	title: `Submit your playlist - ${appName}`,
+	description:
+		'Pick one of your public playlists and give it some tags to help others find it'
+};
 
 type TagOptionsProps = {
 	query: string;
@@ -167,8 +176,7 @@ const Content = () => {
 					Submit your playlist
 				</h1>
 				<p className="mt-4 text-center font-medium text-[#989898]">
-					Pick one of your public playlists and give it some tags to help others
-					find it
+					{meta.description}
 				</p>
 				<div className="mt-10">
 					<form onSubmit={form.handleSubmit(onSubmit)} className="mt-4">
@@ -434,8 +442,10 @@ const Submit: NextPageWithLayout = () => {
 		}
 	}, [isInitialRender, session.status, signInDialogStore]);
 
+	let content: ReactNode = <Content />;
+
 	if (session.status === 'loading') {
-		return (
+		content = (
 			<div className="flex justify-center">
 				<Spinner className="h-6 w-6 fill-white text-[#292929] md:h-8 md:w-8" />
 			</div>
@@ -443,10 +453,25 @@ const Submit: NextPageWithLayout = () => {
 	}
 
 	if (session.status === 'unauthenticated') {
-		return null;
+		content = null;
 	}
 
-	return <Content />;
+	return (
+		<>
+			<Head>
+				<title>{meta.title}</title>
+				<meta name="description" content={meta.description} />
+				<meta name="robots" content="noindex, nofollow" />
+
+				<meta property="og:title" content={meta.title} />
+				<meta property="og:description" content={meta.description} />
+
+				<meta name="twitter:title" content={meta.title} />
+				<meta name="twitter:description" content={meta.description} />
+			</Head>
+			{content}
+		</>
+	);
 };
 
 Submit.getLayout = getLayout;

@@ -4,6 +4,7 @@ import * as Toast from '@radix-ui/react-toast';
 import clsx from 'clsx';
 import { useSession } from 'next-auth/react';
 import Image from 'next/future/image';
+import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -12,6 +13,7 @@ import { z } from 'zod';
 import { getLayout } from '../../../components/Layout';
 import { useSignInDialogStore } from '../../../components/SignInDialog';
 import Spinner from '../../../components/Spinner';
+import { appName } from '../../../constants/general';
 import { trpc } from '../../../utils/trpc';
 import type { NextPageWithLayout } from '../../_app';
 
@@ -144,8 +146,36 @@ const Content = (props: ContentProps) => {
 		);
 	}
 
+	const meta = {
+		title: `Edit "${getPlaylist.data?.data.name}" - ${appName}`,
+		description: getPlaylist.data?.data.description,
+		image: getPlaylist.data?.data.images[0]?.url
+	};
+
 	return (
 		<>
+			<Head>
+				<title>{meta.title}</title>
+				<meta name="robots" content="noindex, nofollow" />
+				<meta property="og:title" content={meta.title} />
+				<meta name="twitter:title" content={meta.title} />
+
+				{meta.description ? (
+					<>
+						<meta name="description" content={meta.description} />
+						<meta property="og:description" content={meta.description} />
+						<meta name="twitter:description" content={meta.description} />
+					</>
+				) : null}
+
+				{meta.image ? (
+					<>
+						<meta property="og:image" content={meta.image} />
+						<meta name="twitter:image" content={meta.image} />
+					</>
+				) : null}
+			</Head>
+
 			<div className="mx-auto max-w-2xl">
 				<h1 className="text-center text-3xl font-bold lg:text-4xl">
 					Edit playlist

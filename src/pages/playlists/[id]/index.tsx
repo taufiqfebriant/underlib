@@ -2,6 +2,7 @@ import { Menu } from '@headlessui/react';
 import clsx from 'clsx';
 import { useSession } from 'next-auth/react';
 import Image from 'next/future/image';
+import Head from 'next/head';
 import type { LinkProps } from 'next/link';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -13,6 +14,7 @@ import { MdPerson } from 'react-icons/md';
 import CustomDialog from '../../../components/CustomDialog';
 import { getLayout } from '../../../components/Layout';
 import Spinner from '../../../components/Spinner';
+import { appName } from '../../../constants/general';
 import { trpc } from '../../../utils/trpc';
 import type { NextPageWithLayout } from '../../_app';
 
@@ -87,8 +89,35 @@ const Content = (props: ContentProps) => {
 		);
 	}
 
+	const meta = {
+		title: `${getPlaylist.data?.data.name} - ${appName}`,
+		description: getPlaylist.data?.data.description,
+		image: getPlaylist.data?.data.images[0]?.url
+	};
+
 	return (
 		<>
+			<Head>
+				<title>{meta.title}</title>
+				<meta property="og:title" content={meta.title} />
+				<meta name="twitter:title" content={meta.title} />
+
+				{meta.description ? (
+					<>
+						<meta name="description" content={meta.description} />
+						<meta property="og:description" content={meta.description} />
+						<meta name="twitter:description" content={meta.description} />
+					</>
+				) : null}
+
+				{meta.image ? (
+					<>
+						<meta property="og:image" content={meta.image} />
+						<meta name="twitter:image" content={meta.image} />
+					</>
+				) : null}
+			</Head>
+
 			<div className="flex flex-col lg:max-h-[225px] lg:flex-row lg:items-center lg:gap-x-8">
 				{getPlaylist.data?.data.images[0] ? (
 					<div className="relative h-[200px] w-[200px] self-center overflow-hidden rounded-md lg:h-[225px] lg:w-[225px]">
@@ -205,6 +234,7 @@ const Content = (props: ContentProps) => {
 					</div>
 				</div>
 			</div>
+
 			<div className="mt-6 flex items-center justify-center gap-x-6">
 				<p className="hidden flex-1 lg:block">
 					{getPlaylist.data?.data.tracks.total} songs
@@ -274,6 +304,7 @@ const Content = (props: ContentProps) => {
 					<BiLinkExternal />
 				</a>
 			</div>
+
 			<div className="mt-4">
 				{getPlaylist.data?.data.tracks.items.map((item, index) => (
 					<div
@@ -292,6 +323,7 @@ const Content = (props: ContentProps) => {
 					</div>
 				))}
 			</div>
+
 			<CustomDialog
 				title="Delete playlist"
 				isOpen={isOpen}

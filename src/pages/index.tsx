@@ -1,6 +1,7 @@
 import { Combobox } from '@headlessui/react';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
+import Head from 'next/head';
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { MdClose, MdFilterAlt, MdOutlineArrowDownward } from 'react-icons/md';
 import { useInView } from 'react-intersection-observer';
@@ -9,6 +10,7 @@ import CustomLink from '../components/CustomLink';
 import { getLayout } from '../components/Layout';
 import { PlaylistCard } from '../components/PlaylistCard';
 import Spinner from '../components/Spinner';
+import { appName } from '../constants/general';
 import { trpc } from '../utils/trpc';
 import type { NextPageWithLayout } from './_app';
 
@@ -166,6 +168,10 @@ const Home: NextPageWithLayout = () => {
 
 	return (
 		<>
+			<Head>
+				<title>{appName}. For a better Spotify playlist discoverability</title>
+			</Head>
+
 			<div className="mt-32 mb-20 md:mt-28">
 				<h1 className="flex h-full flex-col gap-y-2 text-center text-6xl font-bold md:text-8xl">
 					<span className="text-white">Moods.</span>
@@ -220,6 +226,7 @@ const Home: NextPageWithLayout = () => {
 
 				<Playlists tags={selectedTags} />
 			</div>
+
 			<motion.div
 				className="fixed top-0 left-0 w-full bg-[#151515] shadow-sm shadow-[#3c3c3c]"
 				animate={isPassingPlaylistsHeader ? 'open' : 'closed'}
@@ -248,6 +255,7 @@ const Home: NextPageWithLayout = () => {
 					</button>
 				</div>
 			</motion.div>
+
 			<CustomDialog
 				title="Filter"
 				isOpen={isOpen}
