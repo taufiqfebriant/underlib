@@ -125,9 +125,8 @@ const Content = (props: ContentProps) => {
 							src={getPlaylist.data?.data.images[0].url}
 							alt="Playlist image"
 							className="h-auto w-full object-cover"
-							sizes="(min-width: 1024px) 50vw,
-							100vw"
-							fill={true}
+							sizes="100%"
+							fill
 						/>
 					</div>
 				) : null}

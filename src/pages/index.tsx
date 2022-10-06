@@ -65,6 +65,7 @@ const Playlists = (props: PlaylistsProps) => {
 		delay: 100,
 		threshold: 0.3
 	});
+
 	useEffect(() => {
 		const fetchMore = async () => {
 			await getPlaylists.fetchNextPage();
@@ -109,9 +110,7 @@ const Playlists = (props: PlaylistsProps) => {
 				))}
 			</div>
 
-			{getPlaylists.hasNextPage && !isLoading ? (
-				<div className="mt-4 w-full" ref={inView.ref} />
-			) : null}
+			{getPlaylists.hasNextPage && !isLoading ? <div ref={inView.ref} /> : null}
 
 			{isLoading ? (
 				<div className="mt-4 flex w-full justify-center">

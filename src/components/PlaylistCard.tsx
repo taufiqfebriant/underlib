@@ -28,11 +28,8 @@ export const PlaylistCard = (props: Props) => {
 							src={data.images[0].url}
 							alt="Playlist image"
 							className="h-auto w-full object-cover"
-							sizes="(min-width: 640px) 50vw,
-						(min-width: 768px) 25vw,
-						(min-width: 1024px) 20vw,
-						100vw"
-							fill={true}
+							sizes="100%"
+							fill
 						/>
 					</div>
 				) : null}

@@ -10,6 +10,7 @@ import { Fragment, useEffect, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { MdClose } from 'react-icons/md';
+import { useInView } from 'react-intersection-observer';
 import type { z } from 'zod';
 import { getLayout } from '../components/Layout';
 import { useSignInDialogStore } from '../components/SignInDialog';
@@ -89,6 +90,22 @@ const Content = () => {
 	const getPlaylists = trpc.useInfiniteQuery(['me.playlists', { limit: 5 }], {
 		getNextPageParam: lastPage => lastPage.cursor ?? undefined
 	});
+
+	const inView = useInView({
+		trackVisibility: true,
+		delay: 100,
+		threshold: 0.3
+	});
+
+	useEffect(() => {
+		const fetchMore = async () => {
+			await getPlaylists.fetchNextPage();
+		};
+
+		if (inView.entry?.isIntersecting) {
+			fetchMore();
+		}
+	}, [inView.entry?.isIntersecting, getPlaylists]);
 
 	const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(
 		null
@@ -240,9 +257,9 @@ const Content = () => {
 																					<Image
 																						src={playlist.images[0].url}
 																						alt="Playlist image"
-																						sizes="100vw"
 																						className="object-cover"
-																						fill={true}
+																						fill
+																						sizes="100%"
 																					/>
 																				</div>
 																			) : null}
@@ -266,26 +283,14 @@ const Content = () => {
 														</Fragment>
 													))}
 
-													{getPlaylists.hasNextPage ? (
-														<li className="flex h-20 items-center justify-center bg-[#292929]">
-															{getPlaylists.isFetchingNextPage ? (
-																<Spinner className="h-5 w-5 fill-white text-[#3c3c3c]" />
-															) : null}
+													{getPlaylists.hasNextPage &&
+													!getPlaylists.isFetchingNextPage ? (
+														<li ref={inView.ref} />
+													) : null}
 
-															{getPlaylists.hasNextPage &&
-															!getPlaylists.isFetchingNextPage ? (
-																<>
-																	<button
-																		type="button"
-																		className="rounded-md bg-[#3c3c3c] px-4 py-2 transition-colors hover:bg-[#686868]"
-																		onClick={async () =>
-																			await getPlaylists.fetchNextPage()
-																		}
-																	>
-																		Load more
-																	</button>
-																</>
-															) : null}
+													{getPlaylists.isFetchingNextPage ? (
+														<li className="flex h-20 items-center justify-center bg-[#292929]">
+															<Spinner className="h-5 w-5 fill-white text-[#3c3c3c]" />
 														</li>
 													) : null}
 												</Listbox.Options>
