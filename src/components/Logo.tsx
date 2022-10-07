@@ -8,8 +8,8 @@ type Props = Omit<
 const Logo = (props: Props) => {
 	return (
 		<svg
-			width={108}
-			height={43}
+			width={103}
+			height={41}
 			viewBox="0 0 543 214"
 			fill="none"
 			xmlns="http://www.w3.org/2000/svg"

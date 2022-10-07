@@ -135,6 +135,8 @@ const Content = () => {
 		try {
 			await createPlaylist.mutateAsync(data);
 			await utils.invalidateQueries(['me.playlists']);
+			await utils.invalidateQueries(['playlists.all']);
+			await utils.invalidateQueries(['me.submittedPlaylists']);
 
 			form.reset({ id: '', tags: [] });
 			setSelectedPlaylist(null);

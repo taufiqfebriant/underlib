@@ -20,7 +20,11 @@ export const playlistsById = createRouter().query('playlists.byId', {
 			select: {
 				tags: {
 					select: {
-						name: true
+						tag: {
+							select: {
+								name: true
+							}
+						}
 					}
 				}
 			}

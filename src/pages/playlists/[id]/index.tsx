@@ -49,9 +49,17 @@ const Content = (props: ContentProps) => {
 	const router = useRouter();
 
 	const deletePlaylistMutation = trpc.useMutation(['playlists.delete']);
+	const utils = trpc.useContext();
+
 	const deletePlaylist = async () => {
 		try {
 			await deletePlaylistMutation.mutateAsync({ id: props.id });
+
+			await utils.invalidateQueries(['playlists.byId', { id: props.id }]);
+			await utils.invalidateQueries(['playlists.all']);
+			await utils.invalidateQueries(['me.submittedPlaylists']);
+			await utils.invalidateQueries(['me.playlists']);
+
 			setIsOpen(false);
 			router.push({ pathname: '/' });
 		} catch {}
@@ -148,10 +156,10 @@ const Content = (props: ContentProps) => {
 					<div className="mt-4 flex gap-x-2 overflow-x-auto">
 						{getPlaylist.data?.data.tags.map(tag => (
 							<div
-								key={tag.name}
+								key={tag.tag.name}
 								className="whitespace-nowrap rounded-md bg-[#292929] px-2 py-1 text-xs lg:text-sm"
 							>
-								{tag.name}
+								{tag.tag.name}
 							</div>
 						))}
 					</div>

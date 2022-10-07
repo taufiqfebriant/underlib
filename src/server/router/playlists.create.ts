@@ -49,13 +49,27 @@ export const playlistsCreateRouter = createProtectedRouter().mutation(
 						userId: ctx.session.user.id,
 						tags: {
 							connectOrCreate: input.tags.map(tag => {
+								const newTagId = customNanoId();
+
 								return {
 									create: {
-										id: customNanoId(),
-										name: tag
+										tag: {
+											connectOrCreate: {
+												create: {
+													id: newTagId,
+													name: tag
+												},
+												where: {
+													name: tag
+												}
+											}
+										}
 									},
 									where: {
-										name: tag
+										playlistId_tagId: {
+											playlistId: input.id,
+											tagId: newTagId
+										}
 									}
 								};
 							})
@@ -65,13 +79,27 @@ export const playlistsCreateRouter = createProtectedRouter().mutation(
 						deletedAt: null,
 						tags: {
 							connectOrCreate: input.tags.map(tag => {
+								const newTagId = customNanoId();
+
 								return {
 									create: {
-										id: customNanoId(),
-										name: tag
+										tag: {
+											connectOrCreate: {
+												create: {
+													id: newTagId,
+													name: tag
+												},
+												where: {
+													name: tag
+												}
+											}
+										}
 									},
 									where: {
-										name: tag
+										playlistId_tagId: {
+											playlistId: input.id,
+											tagId: newTagId
+										}
 									}
 								};
 							})

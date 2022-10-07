@@ -24,7 +24,11 @@ export const playlistsUpdate = createProtectedRouter().mutation(
 				select: {
 					tags: {
 						select: {
-							name: true
+							tag: {
+								select: {
+									id: true
+								}
+							}
 						}
 					},
 					userId: true
@@ -46,15 +50,29 @@ export const playlistsUpdate = createProtectedRouter().mutation(
 					},
 					data: {
 						tags: {
-							disconnect: playlist.tags,
+							deleteMany: {},
 							connectOrCreate: input.tags.map(tag => {
+								const newTagId = customNanoId();
+
 								return {
 									create: {
-										id: customNanoId(),
-										name: tag
+										tag: {
+											connectOrCreate: {
+												create: {
+													id: newTagId,
+													name: tag
+												},
+												where: {
+													name: tag
+												}
+											}
+										}
 									},
 									where: {
-										name: tag
+										playlistId_tagId: {
+											playlistId: input.id,
+											tagId: newTagId
+										}
 									}
 								};
 							})

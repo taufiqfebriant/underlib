@@ -35,7 +35,10 @@ export const playlistsDelete = createProtectedRouter().mutation(
 						id: input.id
 					},
 					data: {
-						deletedAt: new Date().toISOString()
+						deletedAt: new Date().toISOString(),
+						tags: {
+							deleteMany: {}
+						}
 					}
 				});
 			} catch (e) {

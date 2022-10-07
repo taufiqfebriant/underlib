@@ -1,10 +1,32 @@
 /// <reference types="spotify-api">
-import { Prisma } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 import type { AxiosResponse } from 'axios';
 import axios from 'axios';
 import { z } from 'zod';
+import { createPlaylistSelect } from '../../utils/prisma';
 import { getAccessToken } from '../../utils/spotify';
 import { createRouter } from './context';
+
+const select = createPlaylistSelect({
+	id: true,
+	tags: {
+		select: {
+			tag: {
+				select: {
+					name: true
+				}
+			}
+		}
+	}
+});
+
+type SpotifyPlaylistData = Pick<
+	SpotifyApi.SinglePlaylistResponse,
+	'id' | 'name' | 'description' | 'images' | 'owner'
+>;
+
+type ResponseData = (SpotifyPlaylistData &
+	Pick<Prisma.PlaylistGetPayload<{ select: typeof select }>, 'tags'>)[];
 
 export const playlistsAll = createRouter().query('playlists.all', {
 	input: z.object({
@@ -13,15 +35,6 @@ export const playlistsAll = createRouter().query('playlists.all', {
 		tags: z.array(z.string()).nullish()
 	}),
 	async resolve({ ctx, input }) {
-		const select = Prisma.validator<Prisma.PlaylistSelect>()({
-			id: true,
-			tags: {
-				select: {
-					name: true
-				}
-			}
-		});
-
 		let playlists = await ctx.prisma.playlist.findMany({
 			take: input.limit + 1,
 			select,
@@ -29,8 +42,10 @@ export const playlistsAll = createRouter().query('playlists.all', {
 				deletedAt: null,
 				tags: {
 					some: {
-						name: {
-							in: input.tags?.length ? input.tags : undefined
+						tag: {
+							name: {
+								in: input.tags?.length ? input.tags : undefined
+							}
 						}
 					}
 				}
@@ -51,14 +66,7 @@ export const playlistsAll = createRouter().query('playlists.all', {
 			skip: input.cursor ? 1 : undefined
 		});
 
-		type SpotifyPlaylistData = Pick<
-			SpotifyApi.SinglePlaylistResponse,
-			'id' | 'name' | 'description' | 'images' | 'owner'
-		>;
-
-		const data: (SpotifyPlaylistData &
-			Pick<Prisma.PlaylistGetPayload<{ select: typeof select }>, 'tags'>)[] =
-			[];
+		const data: ResponseData = [];
 
 		if (!playlists.length) {
 			return { data, cursor: null };

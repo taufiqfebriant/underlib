@@ -39,6 +39,10 @@ const TagOptions = (props: TagOptionsProps) => {
 	const defaultClasses =
 		'px-4 cursor-pointer h-10 bg-[#292929] flex items-center';
 
+	if (getTags.isLoading) {
+		return null;
+	}
+
 	if (getTags.error) {
 		return <div className={defaultClasses}>Something went wrong</div>;
 	}
@@ -50,17 +54,19 @@ const TagOptions = (props: TagOptionsProps) => {
 
 	if (isNew) {
 		return (
-			<Combobox.Option
-				value={props.query}
-				className={`${defaultClasses} transition-colors hover:bg-[#3c3c3c]`}
-			>
-				Create &quot;{props.query}&quot;
-			</Combobox.Option>
+			<Combobox.Options className="mt-2 max-h-60 divide-y divide-gray-800 overflow-y-auto rounded-md border border-[#3c3c3c]">
+				<Combobox.Option
+					value={props.query}
+					className={`${defaultClasses} transition-colors hover:bg-[#3c3c3c]`}
+				>
+					Create &quot;{props.query}&quot;
+				</Combobox.Option>
+			</Combobox.Options>
 		);
 	}
 
 	return (
-		<>
+		<Combobox.Options className="mt-2 max-h-60 divide-y divide-gray-800 overflow-y-auto rounded-md border border-[#3c3c3c]">
 			{getTags.data?.data.map(tag => (
 				<Combobox.Option
 					key={tag}
@@ -70,7 +76,7 @@ const TagOptions = (props: TagOptionsProps) => {
 					{tag}
 				</Combobox.Option>
 			))}
-		</>
+		</Combobox.Options>
 	);
 };
 
@@ -99,12 +105,18 @@ const Content = (props: ContentProps) => {
 	const updatingPlaylist =
 		form.formState.isSubmitting || updatePlaylist.isLoading;
 
+	const utils = trpc.useContext();
+
 	const onSubmit = async (data: Schema) => {
 		try {
 			await updatePlaylist.mutateAsync({
 				id: props.id,
 				tags: data.tags
 			});
+
+			await utils.invalidateQueries(['playlists.byId', { id: props.id }]);
+			await utils.invalidateQueries(['playlists.all']);
+			await utils.invalidateQueries(['me.submittedPlaylists']);
 		} catch {}
 	};
 
@@ -212,7 +224,9 @@ const Content = (props: ContentProps) => {
 					<Controller
 						control={form.control}
 						name="tags"
-						defaultValue={getPlaylist.data?.data.tags.flatMap(tag => tag.name)}
+						defaultValue={getPlaylist.data?.data.tags.flatMap(
+							tag => tag.tag.name
+						)}
 						render={({ field, formState }) => (
 							<>
 								<Combobox
@@ -262,18 +276,9 @@ const Content = (props: ContentProps) => {
 										ref={tagsInputRef}
 									/>
 
-									<Combobox.Options
-										className={clsx(
-											'max-h-60 divide-y divide-gray-800 overflow-y-auto rounded-md',
-											{
-												'mt-2 border border-[#3c3c3c]': query && debouncedQuery
-											}
-										)}
-									>
-										{query && debouncedQuery ? (
-											<TagOptions query={debouncedQuery} except={field.value} />
-										) : null}
-									</Combobox.Options>
+									{query && debouncedQuery ? (
+										<TagOptions query={debouncedQuery} except={field.value} />
+									) : null}
 								</Combobox>
 								{formState.errors.tags?.message ? (
 									<p className="mt-2 text-red-600">
