@@ -242,7 +242,7 @@ const Home: NextPageWithLayout = () => {
 					}
 				}}
 			>
-				<div className="flex items-center justify-between py-3">
+				<div className="mx-auto flex max-w-6xl items-center justify-between py-3 px-6 xl:px-0">
 					<h1 className="text-2xl font-bold sm:text-3xl">All playlists</h1>
 					<button
 						type="button"

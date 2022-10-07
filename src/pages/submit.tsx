@@ -161,7 +161,7 @@ const Content = () => {
 					You don&apos;t have a playlist to submit.
 				</p>
 				<div className="mx-auto mt-8 max-w-2xl">
-					<p>There&apos;s a couple of reasons:</p>
+					<p>There are several possibilities:</p>
 					<ul className="ml-4 list-outside list-disc font-medium">
 						<li className="mt-1">You already submit them all.</li>
 						<li>You&apos;re not the owner of the playlist.</li>

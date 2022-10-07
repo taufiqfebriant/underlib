@@ -16,6 +16,7 @@ import {
 	MdQueueMusic
 } from 'react-icons/md';
 import CustomLink from './CustomLink';
+import Logo from './Logo';
 import Spinner from './Spinner';
 
 const useScrollPosition = () => {
@@ -77,9 +78,11 @@ const Nav = () => {
 				)}
 			>
 				<div className="relative mx-auto flex max-w-6xl items-center justify-between px-6 xl:px-0">
-					<div className="bg-white px-4 py-2 font-bold text-[#151515]">
-						diskaver
-					</div>
+					<Link passHref href={{ pathname: '/' }}>
+						<a className="relative h-[40px] w-[101px]">
+							<Logo />
+						</a>
+					</Link>
 					<div className="hidden items-center md:flex">
 						<Link href={{ pathname: '/' }} passHref scroll={false}>
 							<a
