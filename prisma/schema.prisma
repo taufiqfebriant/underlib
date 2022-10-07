@@ -2,32 +2,45 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["referentialIntegrity"]
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider             = "mysql"
+  url                  = env("DATABASE_URL")
+  referentialIntegrity = "prisma"
 }
 
 model Tag {
-  id        String     @id
-  name      String     @unique
-  createdAt DateTime   @default(now()) @map("created_at")
-  updatedAt DateTime   @updatedAt @map("updated_at")
-  deletedAt DateTime?  @map("deleted_at")
-  playlists Playlist[]
+  id        String        @id
+  name      String        @unique
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+  deletedAt DateTime?     @map("deleted_at")
+  playlists PlaylistTag[]
 
   @@map("tags")
 }
 
 model Playlist {
-  id        String    @id
-  userId    String    @map("user_id")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
-  tags      Tag[]
+  id        String        @id
+  userId    String        @map("user_id")
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+  deletedAt DateTime?     @map("deleted_at")
+  tags      PlaylistTag[]
 
   @@map("playlists")
+}
+
+model PlaylistTag {
+  playlist   Playlist @relation(fields: [playlistId], references: [id])
+  playlistId String   @map("playlist_id")
+  tag        Tag      @relation(fields: [tagId], references: [id])
+  tagId      String   @map("tag_id")
+
+  @@id([playlistId, tagId])
+  @@index([playlistId, tagId])
+  @@map("playlist_tag")
 }
