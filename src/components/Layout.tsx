@@ -15,8 +15,7 @@ const Layout = (props: Props) => {
 
 	const meta = {
 		title: appName,
-		description:
-			'Discover Spotify playlists with tags for a better discoverability',
+		description: 'Find Spotify playlists with tags for better discoverability',
 		image: `${env.NEXT_PUBLIC_BASE_URL}/images/underlib-banner.png`,
 		url: `${env.NEXT_PUBLIC_BASE_URL}${router.asPath}`
 	};
