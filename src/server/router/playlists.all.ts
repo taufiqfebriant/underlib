@@ -93,10 +93,12 @@ export const playlistsAll = createRouter().query('playlists.all', {
 				playlist => playlist.id === spotifyPlaylist.id
 			);
 
-			data.push({
-				...spotifyPlaylist,
-				tags: relatedPlaylist ? relatedPlaylist.tags : []
-			});
+			if (relatedPlaylist) {
+				data.push({
+					...spotifyPlaylist,
+					tags: relatedPlaylist.tags
+				});
+			}
 		}
 
 		return { data, cursor };
