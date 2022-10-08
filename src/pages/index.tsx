@@ -19,6 +19,10 @@ const TagOptions = ({ query, except }: { query: string; except: string[] }) => {
 	const defaultClasses =
 		'px-4 cursor-pointer h-10 bg-[#292929] flex items-center';
 
+	if (getTags.isLoading) {
+		return null;
+	}
+
 	if (getTags.error) {
 		return <div className={defaultClasses}>Something went wrong</div>;
 	}
