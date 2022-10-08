@@ -43,7 +43,7 @@ export const playlistsCreateRouter = createProtectedRouter().mutation(
 			}
 
 			try {
-				await prisma?.playlist.upsert({
+				await ctx.prisma.playlist.upsert({
 					create: {
 						id: input.id,
 						userId: ctx.session.user.id,
