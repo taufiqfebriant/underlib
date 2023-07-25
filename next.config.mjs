@@ -17,7 +17,7 @@ export default withRoutes()(
 		reactStrictMode: true,
 		swcMinify: true,
 		images: {
-			domains: ['i.scdn.co', 'mosaic.scdn.co']
+			domains: ['i.scdn.co', 'mosaic.scdn.co', 'images-ak.spotifycdn.com']
 		}
 	})
 );
